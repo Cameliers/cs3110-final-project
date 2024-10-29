@@ -1,4 +1,4 @@
-# dune exec bin/main.exe
+# dune build
 # OCAMLPARAM: unset
 # Shared cache: disabled
 # Shared cache location: /home/andrushka/.cache/dune/db
@@ -13,9 +13,13 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /home/andrushka/.opam/cs3110-2024fa/bin/ocamlc.opt -config > /tmp/dune_6ce9de_output
+$ /home/andrushka/.opam/cs3110-2024fa/bin/ocamlc.opt -config > /tmp/dune_dd7d61_output
 $ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamldep.opt -modules -impl lib/demo.ml) > _build/default/lib/.final_project.objs/final_project__Demo.impl.d
 $ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.final_project.objs/byte -I /home/andrushka/.opam/cs3110-2024fa/lib/graphics -no-alias-deps -opaque -open Final_project -o lib/.final_project.objs/byte/final_project__Demo.cmo -c -impl lib/demo.ml)
+$ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -a -o lib/final_project.cma lib/.final_project.objs/byte/final_project.cmo lib/.final_project.objs/byte/final_project__Demo.cmo)
+$ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I bin/.main.eobjs/byte -I /home/andrushka/.opam/cs3110-2024fa/lib/graphics -I lib/.final_project.objs/byte -no-alias-deps -opaque -o bin/.main.eobjs/byte/dune__exe__Main.cmi -c -intf bin/main.mli)
 $ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I lib/.final_project.objs/byte -I lib/.final_project.objs/native -I /home/andrushka/.opam/cs3110-2024fa/lib/graphics -intf-suffix .ml -no-alias-deps -opaque -open Final_project -o lib/.final_project.objs/native/final_project__Demo.cmx -c -impl lib/demo.ml)
+$ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I bin/.main.eobjs/byte -I bin/.main.eobjs/native -I /home/andrushka/.opam/cs3110-2024fa/lib/graphics -I lib/.final_project.objs/byte -I lib/.final_project.objs/native -intf-suffix .ml -no-alias-deps -opaque -o bin/.main.eobjs/native/dune__exe__Main.cmx -c -impl bin/main.ml)
 $ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -a -o lib/final_project.cmxa lib/.final_project.objs/native/final_project.cmx lib/.final_project.objs/native/final_project__Demo.cmx)
+$ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -shared -linkall -I lib -o lib/final_project.cmxs lib/final_project.cmxa)
 $ (cd _build/default && /home/andrushka/.opam/cs3110-2024fa/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -o bin/main.exe /home/andrushka/.opam/cs3110-2024fa/lib/graphics/graphics.cmxa -I /home/andrushka/.opam/cs3110-2024fa/lib/graphics lib/final_project.cmxa bin/.main.eobjs/native/dune__exe__Main.cmx)
