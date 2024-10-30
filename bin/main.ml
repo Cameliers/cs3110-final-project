@@ -1,3 +1,9 @@
+open Lwt
+open Cohttp
+open Cohttp_lwt_unix
+open Yojson.Basic.Util
+open Final_project.Api_testing
+
 (* [print_segementation] a helper function that prints the symbols [char] a
    given width [length], with the purpose of seperating menu option*)
 let print_segementation char length =
@@ -22,6 +28,8 @@ let display_title title =
   Printf.printf "|/| %s |/| \n" title;
   print_segementation "=" width
 
+(* [display_menu] a helper function that prints a series of menu options to pick
+   from in the program loop.*)
 let display_menu () =
   print_endline "(1) Show Balance";
   print_endline "(2) Show Upcoming Matches";
@@ -29,6 +37,8 @@ let display_menu () =
   print_endline "(4) Place A New Bet";
   print_endline "(5) Exit!"
 
+(* [program_cylce] a Function that acts as the front/landing page of the
+   program.*)
 let rec program_cycle () =
   display_title "Main Page";
   display_menu ();
@@ -37,7 +47,7 @@ let rec program_cycle () =
       print_endline "Current Balance: 99999999999999999999999 \n";
       program_cycle ()
   | "2" ->
-      print_endline "Current Matches: None. \n";
+      print_endline "Current Matches: \n";
       program_cycle ()
   | "3" ->
       print_endline "Current Bet History: No Bets placed yet. \n";
