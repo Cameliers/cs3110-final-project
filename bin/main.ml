@@ -2,11 +2,6 @@ open Final_project.Api_testing
 open Final_project.Match
 open Final_project.User
 open Final_project.Bet
-open Lwt
-open Cohttp
-open Cohttp_lwt_unix
-open Yojson.Basic.Util
-open Final_project.Api_testing
 
 (* [print_segementation] a helper function that prints the symbols [char] a
    given width [length], with the purpose of seperating menu option*)
