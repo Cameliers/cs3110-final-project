@@ -24,7 +24,7 @@ let display_title title =
 
 let display_menu () =
   print_endline "(1) Show Balance";
-  print_endline "(2) Show AutoBets";
+  print_endline "(2) Show Matches";
   print_endline "(3) Show Betting History";
   print_endline "(4) Place A New Bet";
   print_endline "(5) Exit!"
@@ -54,6 +54,6 @@ let rec program_cycle () =
 (* Entry point *)
 let () =
   print_segementation "*" 30;
-  print_endline "* Welcome to Cameliers Sports Betting *";
+  print_endline "* Welcome to Cameliers Sports Betting Center*";
   print_segementation "*" 30;
   program_cycle ()

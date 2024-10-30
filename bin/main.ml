@@ -24,7 +24,7 @@ let display_title title =
 
 let display_menu () =
   print_endline "(1) Show Balance";
-  print_endline "(2) Show AutoBets";
+  print_endline "(2) Show Upcoming Matches";
   print_endline "(3) Show Betting History";
   print_endline "(4) Place A New Bet";
   print_endline "(5) Exit!"
@@ -37,7 +37,7 @@ let rec program_cycle () =
       print_endline "Current Balance: 99999999999999999999999 \n";
       program_cycle ()
   | "2" ->
-      print_endline "Current AutoBets placed: None. \n";
+      print_endline "Current Matches: None. \n";
       program_cycle ()
   | "3" ->
       print_endline "Current Bet History: No Bets placed yet. \n";
