@@ -1,6 +1,6 @@
 type t
 
-val make : t
+val make : unit -> t
 (** Makes a record for the user with a balance of $0, empty active bets list,
     empty bets history list, and auto bet set to false. *)
 
@@ -13,11 +13,8 @@ val bets_active : t -> int list
 val bets_history : t -> int list
 (** Returns the list of bets history for the user. *)
 
-val auto_bet : t -> float
-(** Changes the auto bet setting from true to false or false to true. *)
-
-val change_balance : t -> float
+val change_balance : t -> float -> unit
 (** Change the user balance by an amount. *)
 
-val bet : 'a
+(*val bet : 'a*)
 (** Call make_bet to make a bet on a match with a team and an amount. *)
