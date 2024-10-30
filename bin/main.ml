@@ -1,3 +1,7 @@
+open Final_project.Api_testing
+open Final_project.Match
+open Final_project.User
+open Final_project.Bet
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -37,6 +41,16 @@ let display_menu () =
   print_endline "(4) Place A New Bet";
   print_endline "(5) Exit!"
 
+let matches_string =
+  get_upcoming_matches ()
+  |> List.map (fun (a, b) -> a ^ " vs " ^ b)
+  |> String.concat "\n"
+
+let matches_list =
+  List.map (fun (a, b) -> make_match a b "null") (get_upcoming_matches ())
+
+let user = make_user ()
+
 (* [program_cylce] a Function that acts as the front/landing page of the
    program.*)
 let rec program_cycle () =
@@ -44,15 +58,28 @@ let rec program_cycle () =
   display_menu ();
   match ask_user "\nEnter Number: " with
   | "1" ->
-      print_endline "Current Balance: 99999999999999999999999 \n";
+      print_endline ("Current Balance: " ^ string_of_float (balance user));
       program_cycle ()
   | "2" ->
-      print_endline "Current Matches: \n";
+      print_endline ("Current Matches:\n" ^ matches_string);
       program_cycle ()
   | "3" ->
-      print_endline "Current Bet History: No Bets placed yet. \n";
+      let bet_list = bets_active user in
+      let bet_string_list = List.map (fun bet -> bet_team bet) bet_list in
+      let final_string = String.concat "\n" bet_string_list in
+      print_endline ("Current Bet History:\n" ^ final_string);
       program_cycle ()
-  | "4" -> failwith "todo"
+  | "4" ->
+      print_endline "Choose a match from the matches.";
+      let user_input = read_line () in
+      let index = int_of_string user_input in
+      print_endline "Choose a team";
+      let team = read_line () in
+      print_endline "Choose an amount";
+      let amount = float_of_string (read_line ()) in
+      add_bet user (List.nth matches_list index) team amount;
+      print_endline "added bet!";
+      program_cycle ()
   | "5" ->
       display_title "Goodbye & Goodluck";
       exit 0
