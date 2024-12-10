@@ -19,3 +19,6 @@ val make_match : string -> string -> string -> t
 val to_string : t -> string
 (** [to_string match] returns a string representation of the match [match]. 
     The string will include the a-side team, b-side team, and match odds in a readable format. *)
+
+val of_string : string -> t
+(** [of_string str] returns a match that is parsed from its string representation [str]*)

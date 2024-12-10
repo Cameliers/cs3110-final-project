@@ -5,11 +5,13 @@ type t
 
 (* [bet_id bet] returns the bet id associated with bet [bet].*)
 
-(* [match_id bet] returns *)
 val bet_amount : t -> float
 val bet_team : t -> string
 val bet_game : t -> Match.t
 val make_bet : Match.t -> string -> float -> t
+
 val to_string : t -> string
-(** [to_string bet] returns a string representation of the bet [bet]. 
-    The string will include the game, team, and amount in a readable format. *)
+(** [to_string bet] returns a string representation of the bet [bet].*)
+
+val of_string : string -> t
+(** [of_string str] returns a bet that is parsed from [str]*)

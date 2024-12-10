@@ -9,8 +9,8 @@ let bets_to_string (bets : Bet.t list) : string =
 let string_to_bets (str : string) : Bet.t list =
   if str = "" then []
   else str 
-        |> String.split_on_char ';' 
-        |> List.map Bet.to_string
+    |> String.split_on_char ';'
+    |> List.map Bet.of_string
 
 (* Save the user's profile to a file *)
 let save_to_file (filename : string) (user : User.t) : unit =
@@ -39,15 +39,15 @@ let load_from_file (filename : string) : User.t =
   (* Add each active bet back to the user's profile *)
   List.iter
     (fun bet ->
-      User.add_bet user (Bet.match_of_bet bet) (Bet.team_of_bet bet)
-        (Bet.amount_of_bet bet))
+      User.add_bet user (Bet.bet_game bet) (Bet.bet_team bet)
+        (Bet.bet_amount bet))
     active_bets;
 
   (* Assuming the User module has a function to add a bet directly to the
      history, you may need a different approach if this is not allowed *)
   List.iter
     (fun bet ->
-      User.add_bet user (Bet.match_of_bet bet) (Bet.team_of_bet bet)
-        (Bet.amount_of_bet bet))
+      User.add_bet user (Bet.bet_game bet) (Bet.bet_team bet)
+        (Bet.bet_amount bet))
     bet_history;
   user

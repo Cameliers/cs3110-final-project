@@ -4,7 +4,7 @@ open Final_project.User
 open Final_project.Bet
 
 let test_make_user _ =
-  let user = User.make_user () in
+  let user = make_user () in
   assert_equal 1000.0 user.User.balance;
   assert_equal [] user.User.bets_active;
   assert_equal [] user.User.bets_history

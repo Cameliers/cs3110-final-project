@@ -46,8 +46,6 @@ let matches_string =
 let matches_list =
   List.map (fun (a, b) -> make_match a b "null") (get_upcoming_matches ())
 
-let user = make_user ()
-
 let rec prompt_number () =
   let number = read_line () in
   match number with
@@ -75,7 +73,7 @@ let rec prompt_team (index : int) () =
     print_endline "Please choose a team.";
     prompt_team index ())
 
-let rec prompt_amount () =
+let rec prompt_amount user () =
   let amount = read_line () in
   if float_of_string amount <= balance user then float_of_string amount
   else (
@@ -83,20 +81,20 @@ let rec prompt_amount () =
       ("Your balance is "
       ^ string_of_float (balance user)
       ^ ", please choose an amount less than or equal to your balance.");
-    prompt_amount ())
+    prompt_amount user ())
 
 (* [program_cycle] a Function that acts as the front/landing page of the
    program.*)
-let rec program_cycle () =
+let rec program_cycle user () =
   display_title "Main Page";
   display_menu ();
   match ask_user "\nEnter Number: " with
   | "1" ->
       print_endline ("Current Balance: " ^ string_of_float (balance user));
-      program_cycle ()
+      program_cycle user ()
   | "2" ->
       print_endline ("Current Matches:\n" ^ matches_string);
-      program_cycle ()
+      program_cycle user ()
   | "3" ->
       let bet_list = bets_active user in
       let bet_string_list =
@@ -115,36 +113,37 @@ let rec program_cycle () =
         if bet_string_list = [] then "No bet history." else new_string
       in
       print_endline ("Current Bet History:\n" ^ final_string);
-      program_cycle ()
+      program_cycle user ()
   | "4" ->
       print_endline "Choose a match from the matches.";
       let index = prompt_number () in
       print_endline "Choose a team.";
       let team = prompt_team index () in
       print_endline "Choose an amount.";
-      let amount = prompt_amount () in
+      let amount = prompt_amount user () in
       add_bet user (List.nth matches_list index) team amount;
       print_endline "Added bet!";
-      Profile.save_to_file "user_profile.txt" user;
-      program_cycle ()
+      save_to_file "user_profile.txt" user;
+      program_cycle user ()
   | "5" ->
       display_title "Goodbye & Good Luck!";
-      Profile.save_to_file "user_profile.txt" user;
+      save_to_file "user_profile.txt" user;
       exit 0
   | _ ->
       display_title
         "Invalid Choice, please enter number *no parenthesis required*.";
-      program_cycle ()
+      program_cycle user ()
 
 (* Entry point *)
 let () =
+  
+  print_segmentation "*" 30;
+  print_endline "* Welcome to Cameliers Sports Betting Center*";
+  print_segmentation "*" 30;
   let user = 
-    try Profile.load_from_file "user_profile.txt"
+    try load_from_file "user_profile.txt"
     with _ -> 
       print_endline "No previous user data found. Creating a new profile.";
       make_user () 
   in
-  print_segmentation "*" 30;
-  print_endline "* Welcome to Cameliers Sports Betting Center*";
-  print_segmentation "*" 30;
-  program_cycle ()
+  program_cycle user ()
