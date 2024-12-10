@@ -4,13 +4,13 @@ open Final_project.User
 open Final_project.Bet
 
 let test_make_user _ =
-  let user = User.make_user () in
-  assert_equal 1000.0 user.User.balance;
-  assert_equal [] user.User.bets_active;
-  assert_equal [] user.User.bets_history
+  let user = Final_project.User.make_user () in
+  assert_equal 1000.0 (Final_project.User.balance user);
+  assert_equal [] (Final_project.User.bets_active user);
+  assert_equal [] (Final_project.User.bets_history user)
 
 let test_balance _ =
-  let user = User.make_user () in
+  let user = Final_User.make_user () in
   assert_equal 1000.0 (User.balance user)
 
 let test_change_balance _ =

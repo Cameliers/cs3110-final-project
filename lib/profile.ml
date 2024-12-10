@@ -8,9 +8,8 @@ let bets_to_string (bets : Bet.t list) : string =
 (* Helper to convert a string to a list of bets *)
 let string_to_bets (str : string) : Bet.t list =
   if str = "" then []
-  else str 
-        |> String.split_on_char ';' 
-        |> List.map Bet.to_string
+  else str |> String.split_on_char ';' |> List.map Bet.of_string
+(* Assumes there is an [of_string] function in the Bet module *)
 
 (* Save the user's profile to a file *)
 let save_to_file (filename : string) (user : User.t) : unit =
