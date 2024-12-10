@@ -18,4 +18,6 @@ let add_bet t game team amount =
 
 let complete_bets t =
   t.balance <- t.balance;
+  t.bets_active <- t.bets_active;
+  t.bets_history <- t.bets_history;
   failwith "TODO"
