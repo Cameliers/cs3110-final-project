@@ -10,7 +10,7 @@ let string_to_bets (str : string) : Bet.t list =
   if str = "" then []
   else str 
         |> String.split_on_char ';' 
-        |> List.map Bet.of_string  (* Assumes there is an [of_string] function in the Bet module *)
+        |> List.map Bet.to_string
 
 (* Save the user's profile to a file *)
 let save_to_file (filename : string) (user : User.t) : unit =

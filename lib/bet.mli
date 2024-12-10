@@ -10,3 +10,6 @@ val bet_amount : t -> float
 val bet_team : t -> string
 val bet_game : t -> Match.t
 val make_bet : Match.t -> string -> float -> t
+val to_string : t -> string
+(** [to_string bet] returns a string representation of the bet [bet]. 
+    The string will include the game, team, and amount in a readable format. *)

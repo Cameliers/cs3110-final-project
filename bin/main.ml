@@ -2,6 +2,7 @@ open Final_project.Api_testing
 open Final_project.Match
 open Final_project.User
 open Final_project.Bet
+open Final_project.Profile
 
 (* [print_segementation] a helper function that prints the symbols [char] a
    given width [length], with the purpose of seperating menu option*)
@@ -124,9 +125,11 @@ let rec program_cycle () =
       let amount = prompt_amount () in
       add_bet user (List.nth matches_list index) team amount;
       print_endline "Added bet!";
+      Profile.save_to_file "user_profile.txt" user;
       program_cycle ()
   | "5" ->
       display_title "Goodbye & Good Luck!";
+      Profile.save_to_file "user_profile.txt" user;
       exit 0
   | _ ->
       display_title
@@ -135,6 +138,12 @@ let rec program_cycle () =
 
 (* Entry point *)
 let () =
+  let user = 
+    try Profile.load_from_file "user_profile.txt"
+    with _ -> 
+      print_endline "No previous user data found. Creating a new profile.";
+      make_user () 
+  in
   print_segmentation "*" 30;
   print_endline "* Welcome to Cameliers Sports Betting Center*";
   print_segmentation "*" 30;
