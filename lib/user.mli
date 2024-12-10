@@ -18,3 +18,10 @@ val change_balance : t -> float -> unit
 
 val add_bet : t -> Match.t -> string -> float -> unit
 (** Call make_bet to make a bet on a match with a team and an amount. *)
+
+val complete_bets : t -> unit
+(** Completes a user's bets given a [user], changing the user's balance to
+    reflect whether how much they made/lost off of the bets that have been
+    completed. If a user's active bets are from games that haven't been
+    completed, then nothing happens with that bet. All completed bets are taken
+    off the user's active bets. *)
