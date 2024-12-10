@@ -1,7 +1,4 @@
 open OUnit2
-open Final_project.Match
-open Final_project.User
-open Final_project.Bet
 
 let test_make_user _ =
   let user = Final_project.User.make_user () in
