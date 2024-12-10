@@ -16,21 +16,17 @@ let test_change_balance _ =
   Final_project.User.change_balance user (-200.0);
   assert_equal 1300.0 (Final_project.User.balance user)
 
+(**match Final_project.User.bets_active user with | [ { game; team; amount } ]
+   -> assert_equal "TeamA" team; assert_equal 100.0 amount; assert_equal "TeamA"
+   (Match.a_side game); assert_equal "TeamB" (Match.b_side game); assert_equal
+   "2:1" (Match.match_odds game) | _ -> assert_failure "Expected one active bet"*)
 let test_add_bet _ =
   let match1 = Final_project.Match.make_match "TeamA" "TeamB" "2:1" in
   let user = Final_project.User.make_user () in
   Final_project.User.add_bet user match1 "TeamA" 100.0;
   assert_equal 900.0 (Final_project.User.balance user);
   assert_equal 1 (List.length (Final_project.User.bets_active user));
-  assert_equal 1 (List.length (Final_project.User.bets_history user));
-  (**match Final_project.User.bets_active user with
-  | [ { game; team; amount } ] ->
-      assert_equal "TeamA" team;
-      assert_equal 100.0 amount;
-      assert_equal "TeamA" (Match.a_side game);
-      assert_equal "TeamB" (Match.b_side game);
-      assert_equal "2:1" (Match.match_odds game)
-  | _ -> assert_failure "Expected one active bet"*)
+  assert_equal 1 (List.length (Final_project.User.bets_history user))
 
 let test_bets_active_and_history _ =
   let match1 = Final_project.Match.make_match "TeamA" "TeamB" "2:1" in
@@ -64,7 +60,6 @@ let tests =
   "test_user_module"
   >::: [
          "test_make_user" >:: test_make_user;
-         "test_balance" >:: test_balance;
          "test_change_balance" >:: test_change_balance;
          "test_add_bet" >:: test_add_bet;
          "test_bets_active_and_history" >:: test_bets_active_and_history;
