@@ -136,14 +136,15 @@ let rec program_cycle user () =
 
 (* Entry point *)
 let () =
-  
   print_segmentation "*" 30;
   print_endline "* Welcome to Cameliers Sports Betting Center*";
   print_segmentation "*" 30;
   let user = 
-    try load_from_file "user_profile.txt"
-    with _ -> 
-      print_endline "No previous user data found. Creating a new profile.";
-      make_user () 
+    try 
+      load_from_file "user_profile.txt"
+    with
+    | _ -> 
+      print_endline "No previous user profile found. Creating new user.";
+      make_user ()
   in
   program_cycle user ()
