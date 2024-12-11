@@ -17,12 +17,12 @@ let make_user () =
     balance_history = ([ 1000.0 ], 0.);
   }
 
-let create balance active_bets bet_history =
+let create balance active_bets bet_history balance_history =
   {
     balance;
     bets_active = active_bets;
     bets_history = bet_history;
-    balance_history = ([ balance ], 0.);
+    balance_history;
   }
 
 let balance t = t.balance
