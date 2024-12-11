@@ -4,7 +4,7 @@ open Cohttp_lwt_unix
 open Yojson.Basic.Util
 open Unix
 
-let api_key = "eb26be46ece5ac441a9aa8ae04daa2ff"
+let api_key = "4b8a3e7be455b247dec72f6faf354fb2"
 
 (* Helper function to format Unix timestamp to YYYY-MM-DD *)
 let format_date timestamp =
@@ -107,16 +107,3 @@ let get_match_result (fixture_id : int) : string =
           | Yojson.Json_error _ -> "Error parsing match result"
           | _ -> "Unexpected error")
       | _ -> Lwt.return "Error fetching match result" )
-
-(* Example usage *)
-let () =
-  let upcoming_matches = get_upcoming_matches () in
-  List.iter
-    (fun (fixture_id, home_team, away_team) ->
-      Printf.printf "Fixture: %d, %s vs %s\n" fixture_id home_team away_team)
-    upcoming_matches;
-
-  (* Example to fetch match results *)
-  let example_fixture_id = 123456 (* Replace with an actual fixture ID *) in
-  let match_result = get_match_result example_fixture_id in
-  Printf.printf "Match Result: %s\n" match_result
