@@ -1,28 +1,32 @@
 type t
-(* The type representing a match. A match has a match id, an a team, a b team,
-   and the match odds.*)
+(** The type representing a match. A match has:
+    - a match id (int)
+    - an a-side team (string)
+    - a b-side team (string)
+    - odds represented as a string. *)
 
 val match_id : t -> int
+(** [match_id x] returns the unique identifier of match [x]. *)
 
-(* [match_id x] returns the id associated with match [x].*)
 val a_side : t -> string
+(** [a_side x] returns the a-side team of match [x]. *)
 
-(* [a_side x] returns the a team associated with match [x].*)
 val b_side : t -> string
+(** [b_side x] returns the b-side team of match [x]. *)
 
-(* [b_side x] returns the b team associated with match [x].*)
 val match_odds : t -> string
+(** [match_odds x] returns the odds associated with match [x], as a string. *)
 
-(* [match_odds x] returns the odds associated with match [x].*)
 val make_match : int -> string -> string -> string -> t
-(* [make_match x] creates a new match given an id, an a team, a b team, and
-   odds.*)
+(** [make_match id a b odds] creates a new match with identifier [id], a-side
+    team [a], b-side team [b], and odds [odds]. *)
 
 val to_string : t -> string
-(** [to_string match] returns a string representation of the match [match]. The
-    string will include the a-side team, b-side team, and match odds in a
-    readable format. *)
+(** [to_string match] returns a string representation of [match]. The string
+    includes the match id, the a-side team, the b-side team, and the odds in a
+    human-readable format. *)
 
 val of_string : string -> t
-(** [of_string str] returns a match that is parsed from its string
-    representation [str]*)
+(** [of_string str] returns a match parsed from [str]. It expects a format
+    matching that produced by [to_string]. Raises [Failure] if the format is
+    invalid. *)
