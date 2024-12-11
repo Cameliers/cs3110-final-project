@@ -2,3 +2,9 @@
  (public_name final_project)
  (name main)
  (libraries final_project))
+
+(executable
+ (public_name final_project_gui)
+ (name gui_main)
+ (modules gui_main)
+ (libraries final_project lablgtk3))
