@@ -1,8 +1,4 @@
 open OUnit2
-open Final_project.Bet
-open Final_project.Match
-open Final_project.Profile
-open Final_project.User
 
 let test_make_user _ =
   let user = Final_project.User.make_user () in
@@ -160,10 +156,8 @@ let test_save_and_load_user_with_bets _ =
   let user = Final_project.User.make_user () in
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
   let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
-  let bet1 = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
-  let bet2 = Final_project.Bet.make_bet match2 "TeamC" 200.0 in
-  Final_project.User.add_bet user bet1;
-  Final_project.User.add_bet user bet2;
+  Final_project.User.add_bet user match1 "TeamA" 100.0;
+  Final_project.User.add_bet user match2 "TeamC" 200.0;
   Final_project.Profile.save_to_file filename user;
   let loaded_user = Final_project.Profile.load_from_file filename in
   assert_equal (Final_project.User.balance user) (Final_project.User.balance loaded_user);
@@ -188,7 +182,9 @@ let tests =
          "test_change_balance_multiple_operations" >:: test_change_balance_multiple_operations;
          "test_change_balance_multiple_operations_alternative1" >:: test_change_balance_multiple_operations_alternative1;
          "test_change_balance_multiple_operations_alternative2" >:: test_change_balance_multiple_operations_alternative2;
-         "test_bets_to_string_empty" >:: test_bets_to_string_empty;
+         "test_change_balance_boundary_values" >:: test_change_balance_boundary_values;
+         "test_change_balance_boundary_values_alternative1" >:: test_change_balance_boundary_values_alternative1;
+         "test_change_balance_boundary_values_alternative2" >:: test_change_balance_boundary_values_alternative2;
          "test_bets_to_string_single" >:: test_bets_to_string_single;
          "test_bets_to_string_multiple" >:: test_bets_to_string_multiple;
          "test_string_to_bets_empty" >:: test_string_to_bets_empty;
