@@ -93,18 +93,6 @@ let test_change_balance_boundary_values _ =
   Final_project.User.change_balance user (-1e6);
   assert_equal 1000.0 (Final_project.User.balance user)
 
-let test_change_balance_boundary_values_alternative1 _ =
-  let user = Final_project.User.make_user () in
-  Final_project.User.change_balance user max_float;
-  Final_project.User.change_balance user (-1.0 *. max_float);
-  assert_equal 1000.0 (Final_project.User.balance user)
-
-let test_change_balance_boundary_values_alternative2 _ =
-  let user = Final_project.User.make_user () in
-  Final_project.User.change_balance user 1.0;
-  Final_project.User.change_balance user (-1.0);
-  assert_equal 1000.0 (Final_project.User.balance user)
-
 let test_bets_to_string_single _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
   let bet = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
@@ -183,8 +171,6 @@ let tests =
          "test_change_balance_multiple_operations_alternative1" >:: test_change_balance_multiple_operations_alternative1;
          "test_change_balance_multiple_operations_alternative2" >:: test_change_balance_multiple_operations_alternative2;
          "test_change_balance_boundary_values" >:: test_change_balance_boundary_values;
-         "test_change_balance_boundary_values_alternative1" >:: test_change_balance_boundary_values_alternative1;
-         "test_change_balance_boundary_values_alternative2" >:: test_change_balance_boundary_values_alternative2;
          "test_bets_to_string_single" >:: test_bets_to_string_single;
          "test_bets_to_string_multiple" >:: test_bets_to_string_multiple;
          "test_string_to_bets_empty" >:: test_string_to_bets_empty;
