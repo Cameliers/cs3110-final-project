@@ -11,7 +11,8 @@ let format_date timestamp =
   let tm = Unix.gmtime timestamp in
   Printf.sprintf "%04d-%02d-%02d" (tm.tm_year + 1900) (tm.tm_mon + 1) tm.tm_mday
 
-let get_upcoming_matches () =
+(* Fetches a list of upcoming matches for today *)
+let get_upcoming_matches () : (int * string * string) list =
   let today = Unix.time () in
   let date = format_date today in
 
@@ -38,6 +39,9 @@ let get_upcoming_matches () =
               (fun i _ -> i < 10)
               (List.map
                  (fun m ->
+                   let fixture_id =
+                     m |> member "fixture" |> member "id" |> to_int
+                   in
                    let home_team =
                      m |> member "teams" |> member "home" |> member "name"
                      |> to_string
@@ -46,10 +50,80 @@ let get_upcoming_matches () =
                      m |> member "teams" |> member "away" |> member "name"
                      |> to_string
                    in
-                   (home_team, away_team))
+                   (fixture_id, home_team, away_team))
                  matches)
           with
           | Yojson.Json_error _ -> []
           | _ -> [])
       | _ -> Lwt.return [] )
-(* Ensure this branch returns a (string * string) list *)
+
+(* Fetches the result of a specific match by fixture ID *)
+let get_match_result (fixture_id : int) : int * string * string * string =
+  let uri =
+    Uri.of_string
+      (Printf.sprintf "https://v3.football.api-sports.io/fixtures?id=%d"
+         fixture_id)
+  in
+  let headers =
+    Header.init () |> fun h ->
+    Header.add h "x-rapidapi-key" api_key |> fun h ->
+    Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
+  in
+  Lwt_main.run
+    ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+      match resp.status with
+      | `OK -> (
+          body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
+          try
+            let json = Yojson.Basic.from_string body_str in
+            let match_info = json |> member "response" |> to_list |> List.hd in
+            let home_team =
+              match_info |> member "teams" |> member "home" |> member "name"
+              |> to_string
+            in
+            let away_team =
+              match_info |> member "teams" |> member "away" |> member "name"
+              |> to_string
+            in
+            let status =
+              match_info |> member "fixture" |> member "status"
+              |> member "short" |> to_string
+            in
+            let result =
+              match status with
+              | "FT" ->
+                  let home_score =
+                    match_info |> member "goals" |> member "home" |> to_int
+                  in
+                  let away_score =
+                    match_info |> member "goals" |> member "away" |> to_int
+                  in
+                  if home_score > away_score then "Home Win"
+                  else if away_score > home_score then "Away Win"
+                  else "Draw"
+              | "NS" -> "Not Finished"
+              | "CANC" -> "Cancelled"
+              | _ -> "Unknown Status"
+            in
+            (fixture_id, home_team, away_team, result)
+          with
+          | Yojson.Json_error _ ->
+              (fixture_id, "", "", "Error parsing match result")
+          | _ -> (fixture_id, "", "", "Unexpected error"))
+      | _ -> Lwt.return (fixture_id, "", "", "Error fetching match result") )
+
+(* Example usage *)
+let () =
+  let upcoming_matches = get_upcoming_matches () in
+  List.iter
+    (fun (fixture_id, home_team, away_team) ->
+      Printf.printf "Fixture: %d, %s vs %s\n" fixture_id home_team away_team)
+    upcoming_matches;
+
+  (* Example to fetch match results *)
+  let example_fixture_id = 123456 (* Replace with an actual fixture ID *) in
+  let match_result = get_match_result example_fixture_id in
+  match match_result with
+  | id, home, away, result ->
+      Printf.printf "Match Result: %d, %s vs %s, Result: %s\n" id home away
+        result
