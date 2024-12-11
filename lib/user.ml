@@ -6,21 +6,43 @@ type t = {
   mutable balance : float;
   mutable bets_active : Bet.t list;
   mutable bets_history : Bet.t list;
+  mutable balance_history : float list * float;
 }
 
-exception Insufficient_Balance
+let make_user () =
+  {
+    balance = 1000.0;
+    bets_active = [];
+    bets_history = [];
+    balance_history = ([ 1000.0 ], 0.);
+  }
 
-let make_user () = { balance = 1000.0; bets_active = []; bets_history = [] }
-
-let create balance active_bets bet_history =
-  { balance; bets_active = active_bets; bets_history = bet_history }
+let create balance active_bets bet_history balance_history =
+  {
+    balance;
+    bets_active = active_bets;
+    bets_history = bet_history;
+    balance_history;
+  }
 
 let balance t = t.balance
 let bets_active t = t.bets_active
 let bets_history t = t.bets_history
-let change_balance t change = t.balance <- t.balance +. change
+
+let change_balance t change =
+  let new_balance_list = fst t.balance_history @ [ t.balance +. change ] in
+  let overall_gains =
+    match new_balance_list with
+    | h :: _ -> t.balance +. change -. h
+    | _ -> failwith "bruh"
+  in
+  t.balance_history <- (new_balance_list, overall_gains);
+  t.balance <- t.balance +. change
+
+let balance_history t = t.balance_history
 
 let remove_bet t bet_to_remove =
+  change_balance t (bet_to_remove);
   t.bets_active <- List.filter (fun bet -> bet <> bet_to_remove) t.bets_active
 
 let modify_bet t bet_to_modify extra_amount =
@@ -29,7 +51,7 @@ let modify_bet t bet_to_modify extra_amount =
       (fun bet -> 
         if bet = bet_to_modify then 
           let new_amount = bet_amount bet +. extra_amount in
-          t.balance <- t.balance -. extra_amount; (* Deduct from balance *)
+          change_balance t (-1. *. extra_amount); (* Deduct from balance *)
           make_bet (bet_game bet) (bet_team bet) new_amount
         else bet
       ) 
@@ -43,7 +65,7 @@ let add_bet t game team amount =
   if amount > 0 && amount < t.balance then
     let bet = Bet.make_bet game team amount in
     t.bets_active <- bet :: t.bets_active;
-    t.balance <- t.balance -. amount
+    change_balance t (-1. *. amount)
   else
     raise Insufficient_Balance
 
@@ -65,7 +87,7 @@ let complete_bets t =
           t.bets_history <- bet :: t.bets_history
       | "Not Finished" -> ()
       | "Cancelled" ->
-          t.balance <- t.balance +. bet_amount bet;
+          change_balance t (bet_amount bet);
           t.bets_active <-
             List.filter
               (fun bet ->
@@ -76,8 +98,7 @@ let complete_bets t =
           t.bets_history <- bet :: t.bets_history
       | "Unknown Status" -> ()
       | team ->
-          if team = bet_team bet then
-            t.balance <- t.balance +. (2. *. bet_amount bet)
+          if team = bet_team bet then change_balance t (2. *. bet_amount bet)
           else ();
           t.bets_active <-
             List.filter
