@@ -11,3 +11,4 @@ val load_from_file : string -> User.t
     [filename]. The file is expected to contain the user's balance, active bets,
     and bet history in the appropriate format. Raises an exception if the file
     is malformed. *)
+
