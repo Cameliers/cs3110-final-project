@@ -1,3 +1,7 @@
+open Final_project.Api_testing
+open Final_project.Bet
+open Final_project.Match
+
 type t = {
   mutable balance : float;
   mutable bets_active : Bet.t list;
@@ -5,7 +9,10 @@ type t = {
 }
 
 let make_user () = { balance = 1000.0; bets_active = []; bets_history = [] }
-let create balance active_bets bet_history = { balance=balance; bets_active = active_bets; bets_history=bet_history}
+
+let create balance active_bets bet_history =
+  { balance; bets_active = active_bets; bets_history = bet_history }
+
 let balance t = t.balance
 let bets_active t = t.bets_active
 let bets_history t = t.bets_history
@@ -18,7 +25,43 @@ let add_bet t game team amount =
   t.balance <- t.balance -. amount
 
 let complete_bets t =
-  t.balance <- t.balance;
-  t.bets_active <- t.bets_active;
-  t.bets_history <- t.bets_history;
-  failwith "TODO"
+  List.iter
+    (fun bet ->
+      let bet_match = bet_game bet in
+      let id = match_id bet_match in
+      let (result : string) = get_match_result id in
+      match result with
+      | "Draw" ->
+          t.bets_active <-
+            List.filter
+              (fun bet ->
+                let bet_match = bet_game bet in
+                let filter_id = match_id bet_match in
+                if id = filter_id then false else true)
+              t.bets_active;
+          t.bets_history <- bet :: t.bets_history
+      | "Not Finished" -> ()
+      | "Cancelled" ->
+          t.balance <- t.balance +. bet_amount bet;
+          t.bets_active <-
+            List.filter
+              (fun bet ->
+                let bet_match = bet_game bet in
+                let filter_id = match_id bet_match in
+                if id = filter_id then false else true)
+              t.bets_active;
+          t.bets_history <- bet :: t.bets_history
+      | "Unknown Status" -> ()
+      | team ->
+          if team = bet_team bet then
+            t.balance <- t.balance +. (2. *. bet_amount bet)
+          else ();
+          t.bets_active <-
+            List.filter
+              (fun bet ->
+                let bet_match = bet_game bet in
+                let filter_id = match_id bet_match in
+                if id = filter_id then false else true)
+              t.bets_active;
+          t.bets_history <- bet :: t.bets_history)
+    t.bets_active

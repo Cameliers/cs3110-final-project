@@ -2,6 +2,8 @@ type t
 (* The type representing a match. A match has a match id, an a team, a b team,
    and the match odds.*)
 
+val match_id : t -> int
+
 (* [match_id x] returns the id associated with match [x].*)
 val a_side : t -> string
 
@@ -17,8 +19,10 @@ val make_match : string -> string -> string -> t
    odds.*)
 
 val to_string : t -> string
-(** [to_string match] returns a string representation of the match [match]. 
-    The string will include the a-side team, b-side team, and match odds in a readable format. *)
+(** [to_string match] returns a string representation of the match [match]. The
+    string will include the a-side team, b-side team, and match odds in a
+    readable format. *)
 
 val of_string : string -> t
-(** [of_string str] returns a match that is parsed from its string representation [str]*)
+(** [of_string str] returns a match that is parsed from its string
+    representation [str]*)
