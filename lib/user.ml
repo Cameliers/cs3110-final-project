@@ -1,6 +1,6 @@
-open Final_project.Api_testing
-open Final_project.Bet
-open Final_project.Match
+open Api_testing
+open Bet
+open Match
 
 type t = {
   mutable balance : float;
@@ -29,7 +29,7 @@ let complete_bets t =
     (fun bet ->
       let bet_match = bet_game bet in
       let id = match_id bet_match in
-      let (result : string) = get_match_result id in
+      let result = get_match_result id in
       match result with
       | "Draw" ->
           t.bets_active <-
