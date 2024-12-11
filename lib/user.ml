@@ -8,6 +8,8 @@ type t = {
   mutable bets_history : Bet.t list;
 }
 
+exception Insufficient_Balance
+
 let make_user () = { balance = 1000.0; bets_active = []; bets_history = [] }
 
 let create balance active_bets bet_history =
@@ -18,10 +20,32 @@ let bets_active t = t.bets_active
 let bets_history t = t.bets_history
 let change_balance t change = t.balance <- t.balance +. change
 
+let remove_bet t bet_to_remove =
+  t.bets_active <- List.filter (fun bet -> bet <> bet_to_remove) t.bets_active
+
+let modify_bet t bet_to_modify extra_amount =
+  if extra_amount > 0 && extra_amount < t.balance then
+    let updated_bets = List.map 
+      (fun bet -> 
+        if bet = bet_to_modify then 
+          let new_amount = bet_amount bet +. extra_amount in
+          t.balance <- t.balance -. extra_amount; (* Deduct from balance *)
+          make_bet (bet_game bet) (bet_team bet) new_amount
+        else bet
+      ) 
+      t.bets_active 
+    in
+    t.bets_active <- updated_bets
+  else
+    raise Insufficient_Balance
+
 let add_bet t game team amount =
-  let bet = Bet.make_bet game team amount in
-  t.bets_active <- bet :: t.bets_active;
-  t.balance <- t.balance -. amount
+  if amount > 0 && amount < t.balance then
+    let bet = Bet.make_bet game team amount in
+    t.bets_active <- bet :: t.bets_active;
+    t.balance <- t.balance -. amount
+  else
+    raise Insufficient_Balance
 
 let complete_bets t =
   List.iter

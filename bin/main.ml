@@ -83,13 +83,7 @@ let rec prompt_amount_with_cancel user () =
   | "C" | "c" -> `Cancel
   | input -> (
       try
-        let amount = float_of_string input in
-        if amount > 0. && amount <= balance user then `Value amount
-        else (
-          Printf.printf
-            "Your balance is %.2f. Please enter an amount within your balance.\n"
-            (balance user);
-          prompt_amount_with_cancel user ())
+        let amount = float_of_string input in `Value amount
       with Failure _ ->
         print_endline "Invalid input. Please enter a valid amount.";
         prompt_amount_with_cancel user ())
@@ -137,14 +131,20 @@ let rec program_cycle user () =
               print_endline "Action canceled. Returning to the main menu.";
               program_cycle user ()
           | `Value team -> (
-              match prompt_amount_with_cancel user () with
-              | `Cancel ->
-                  print_endline "Action canceled. Returning to the main menu.";
-                  program_cycle user ()
-              | `Value amount ->
+            let amount = prompt_amount_with_cancel user () in
+            match amount with
+            | `Cancel ->
+                print_endline "Action canceled. Returning to the main menu.";
+                program_cycle user ()
+            | `Value amount -> 
+                try 
                   add_bet user (List.nth matches_list index) team amount;
                   print_endline "Bet successfully placed!";
-                  program_cycle user ())))
+                with
+                | Insufficient_Balance -> 
+                  Printf.printf "Your balance is %.2f. Please enter an amount within your balance.\n"
+                  (balance user);
+                program_cycle user ())))
   | "5" ->
       display_title "Goodbye & Good Luck!";
       save_to_file "./data/user_profile.txt" user;

@@ -1,5 +1,7 @@
 type t
 
+exception Insufficient_Balance
+
 val make_user : unit -> t
 (** Makes a record for the user with a balance of $0, empty active bets list,
     empty bets history list, and auto bet set to false. *)
@@ -18,6 +20,12 @@ val bets_history : t -> Bet.t list
 
 val change_balance : t -> float -> unit
 (** Change the user balance by an amount. *)
+
+val remove_bet : t -> Bet.t -> unit
+(**Remove a bet from the active bet list*)
+
+val modify_bet : t -> Bet.t -> float -> unit
+(**Modify a bet with an extra added-on amount of money*)
 
 val add_bet : t -> Match.t -> string -> float -> unit
 (** Call make_bet to make a bet on a match with a team and an amount. *)
