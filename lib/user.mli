@@ -19,6 +19,8 @@ val bets_history : t -> Bet.t list
 val change_balance : t -> float -> unit
 (** Change the user balance by an amount. *)
 
+val balance_history : t -> float list * float
+
 val add_bet : t -> Match.t -> string -> float -> unit
 (** Call make_bet to make a bet on a match with a team and an amount. *)
 
