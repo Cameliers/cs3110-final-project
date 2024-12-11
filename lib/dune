@@ -1,3 +1,5 @@
 (library
  (name final_project)
- (libraries graphics cohttp-lwt-unix yojson lwt))
+ (libraries graphics cohttp-lwt-unix yojson lwt)
+ (instrumentation
+  (backend bisect_ppx)))
