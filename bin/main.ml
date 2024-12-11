@@ -33,9 +33,10 @@ let display_title title =
 let display_menu () =
   print_endline "(1) Show Balance";
   print_endline "(2) Show Upcoming Matches";
-  print_endline "(3) Show Betting History";
-  print_endline "(4) Place A New Bet";
-  print_endline "(5) Exit!"
+  print_endline "(3) Enter Active bets menu";
+  print_endline "(4) Show Completed Bets History";
+  print_endline "(5) Place A New Bet";
+  print_endline "(6) Exit!"
 
 let matches_string =
   get_upcoming_matches ()
@@ -94,6 +95,117 @@ let rec prompt_amount_with_cancel user () =
         print_endline "Invalid input. Please enter a valid amount.";
         prompt_amount_with_cancel user ())
 
+(* Prompt the user for an active bet index with a cancel option *)
+let rec prompt_active_bet_index_with_cancel active_bets =
+  print_endline "Enter the number of the bet you want to modify (C to cancel):";
+  match read_line () with
+  | "C" | "c" -> `Cancel
+  | input -> (
+      try
+        let number = int_of_string input in
+        if number >= 1 && number <= List.length active_bets then
+          `Value (number - 1)
+        else (
+          print_endline "Please choose a valid bet number from the list.";
+          prompt_active_bet_index_with_cancel active_bets)
+      with Failure _ ->
+        print_endline "Invalid input. Please enter a number.";
+        prompt_active_bet_index_with_cancel active_bets)
+
+(* Prompt the user for additional amount to increase a bet with cancel *)
+let rec prompt_additional_amount_with_cancel user () =
+  print_endline
+    "Enter the additional amount you want to add to this bet (C to cancel):";
+  match read_line () with
+  | "C" | "c" -> `Cancel
+  | input -> (
+      try
+        let amount = float_of_string input in
+        if amount > 0. && amount <= balance user then `Value amount
+        else (
+          Printf.printf
+            "Your balance is %.2f. Please enter an amount within your balance.\n"
+            (balance user);
+          prompt_additional_amount_with_cancel user ())
+      with Failure _ ->
+        print_endline "Invalid input. Please enter a valid amount.";
+        prompt_additional_amount_with_cancel user ())
+
+(* Function to handle the active bets menu *)
+let rec active_bets_menu user active_bet_list =
+  (* Display active bets *)
+  let active_bet_string_list =
+    List.mapi
+      (fun i bet ->
+        Printf.sprintf "(%d) %s vs %s: Bet $%.2f on %s" (i + 1)
+          (a_side (bet_game bet))
+          (b_side (bet_game bet))
+          (bet_amount bet) (bet_team bet))
+      active_bet_list
+  in
+  let final_string =
+    if active_bet_string_list = [] then "\nCurrently no active bets placed."
+    else String.concat "\n" active_bet_string_list
+  in
+  print_endline ("Current Active Bets:\n" ^ final_string);
+
+  if active_bet_list = [] then (
+    print_newline ();
+    print_endline "Press ENTER to return to the main menu...";
+    ignore (read_line ());
+    `Return_to_main)
+  else (
+    print_newline ();
+    print_endline "Active Bets Menu:";
+    print_endline "(1) Cancel a bet";
+    print_endline "(2) Increase bet amount";
+    print_endline "(C) Return to main menu";
+    match read_line () with
+    | "C" | "c" ->
+        print_endline "Returning to main menu.";
+        `Return_to_main
+    | "1" -> (
+        match prompt_active_bet_index_with_cancel active_bet_list with
+        | `Cancel ->
+            print_endline "Action canceled. Returning to active bets menu.";
+            active_bets_menu user active_bet_list
+        | `Value bet_index ->
+            let bet_to_cancel = List.nth active_bet_list bet_index in
+            remove_bet user bet_to_cancel;
+            print_endline "Bet successfully canceled!";
+            `Refresh)
+    | "2" -> (
+        match prompt_active_bet_index_with_cancel active_bet_list with
+        | `Cancel ->
+            print_endline "Action canceled. Returning to active bets menu.";
+            active_bets_menu user active_bet_list
+        | `Value bet_index -> (
+            let bet_to_increase = List.nth active_bet_list bet_index in
+            print_endline
+              (Printf.sprintf
+                 "Current bet amount: $%.2f. How much do you want to add?"
+                 (bet_amount bet_to_increase));
+            match prompt_additional_amount_with_cancel user () with
+            | `Cancel ->
+                print_endline "Action canceled. Returning to active bets menu.";
+                active_bets_menu user active_bet_list
+            | `Value additional_amount ->
+                (* Increase the bet amount. We assume we have a function like
+                   `increase_bet` or we can re-implement it. If not, we can
+                   remove the old bet and add a new one with the updated
+                   amount. *)
+                let new_amount =
+                  bet_amount bet_to_increase +. additional_amount
+                in
+                remove_bet user bet_to_increase;
+                add_bet user (bet_game bet_to_increase)
+                  (bet_team bet_to_increase) new_amount;
+                print_endline "Bet amount successfully increased!";
+                `Refresh))
+    | _ ->
+        print_endline "Invalid choice. Returning to active bets menu.";
+        active_bets_menu user active_bet_list)
+
 (* [program_cycle] a Function that acts as the front/landing page of the
    program. *)
 let rec program_cycle user () =
@@ -101,14 +213,26 @@ let rec program_cycle user () =
   display_menu ();
   match ask_user "\nEnter Number: " with
   | "1" ->
+      print_newline ();
       print_endline ("Current Balance: " ^ string_of_float (balance user));
+      print_newline ();
       program_cycle user ()
   | "2" ->
       print_endline ("Current Matches:\n" ^ matches_string);
       program_cycle user ()
-  | "3" ->
-      let bet_list = bets_active user in
-      let bet_string_list =
+  | "3" -> (
+      let active_bet_list = bets_active user in
+      match active_bets_menu user active_bet_list with
+      | `Return_to_main -> program_cycle user ()
+      | `Refresh -> (
+          (* After modifying bets, call active_bets_menu again to reflect
+             changes *)
+          match active_bets_menu user (bets_active user) with
+          | `Return_to_main -> program_cycle user ()
+          | `Refresh -> program_cycle user ()))
+  | "4" ->
+      let completed_bet_list = bets_history user in
+      let completed_bet_string_list =
         List.map
           (fun bet ->
             a_side (bet_game bet)
@@ -117,15 +241,17 @@ let rec program_cycle user () =
             ^ ": Bet $"
             ^ string_of_float (bet_amount bet)
             ^ " on " ^ bet_team bet)
-          bet_list
+          completed_bet_list
       in
-      let new_string = String.concat "\n" bet_string_list in
+      let new_string = String.concat "\n" completed_bet_string_list in
       let final_string =
-        if bet_string_list = [] then "No bet history." else new_string
+        if completed_bet_string_list = [] then "No completed bets."
+        else new_string
       in
-      print_endline ("Current Bet History:\n" ^ final_string);
+      print_endline ("Completed Bet History:\n" ^ final_string);
+      print_newline ();
       program_cycle user ()
-  | "4" -> (
+  | "5" -> (
       print_endline "Choose a match from the matches.";
       match prompt_number_with_cancel () with
       | `Cancel ->
@@ -145,7 +271,7 @@ let rec program_cycle user () =
                   add_bet user (List.nth matches_list index) team amount;
                   print_endline "Bet successfully placed!";
                   program_cycle user ())))
-  | "5" ->
+  | "6" ->
       display_title "Goodbye & Good Luck!";
       save_to_file "./data/user_profile.txt" user;
       exit 0
