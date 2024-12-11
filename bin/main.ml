@@ -39,12 +39,14 @@ let display_menu () =
 
 let matches_string =
   get_upcoming_matches ()
-  |> List.mapi (fun i (a, b) ->
+  |> List.mapi (fun i (_, a, b) ->
          "(" ^ string_of_int (i + 1) ^ ") " ^ a ^ " vs " ^ b)
   |> String.concat "\n"
 
 let matches_list =
-  List.map (fun (a, b) -> make_match a b "null") (get_upcoming_matches ())
+  List.map
+    (fun ((id : int), a, b) -> make_match id a b "null")
+    (get_upcoming_matches ())
 
 let rec prompt_number () =
   let number = read_line () in
@@ -141,8 +143,7 @@ let () =
   let user =
     let filename = "./data/user_profile.txt" in
     if Sys.file_exists filename then
-      load_from_file filename  (* Load user profile from file *)
-    else
-      make_user ()  (* Create a new user if the file does not exist *)
+      load_from_file filename (* Load user profile from file *)
+    else make_user () (* Create a new user if the file does not exist *)
   in
   program_cycle user ()
