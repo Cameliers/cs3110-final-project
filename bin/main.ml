@@ -3,6 +3,7 @@ open Final_project.Match
 open Final_project.User
 open Final_project.Bet
 open Final_project.Profile
+open Final_project.Lottery
 
 (* [print_segementation] a helper function that prints the symbols [char] a
    given width [length], with the purpose of seperating menu option *)
@@ -36,7 +37,8 @@ let display_menu () =
   print_endline "(3) Enter Active bets menu";
   print_endline "(4) Show Completed Bets History";
   print_endline "(5) Place A New Bet";
-  print_endline "(6) Exit!"
+  print_endline "(6) Spin for BONUS cash!";
+  print_endline "(7) Exit!"
 
 let matches_string =
   get_upcoming_matches ()
@@ -274,6 +276,33 @@ let rec program_cycle user () =
                       (balance user);
                     program_cycle user ()))))
   | "6" ->
+    let bonus = spin_lottery () in
+    let new_balance = balance user +. bonus in
+
+    (* Print the spinner and bonus value dynamically *)
+    for i = 1 to 3 do
+      let str = String.make i '.' in
+      Printf.printf "\rSpinning%s" str; (* Print spinner *)
+      flush stdout;                    (* Flush to force immediate printing *)
+      Unix.sleep 1;                    (* Sleep for 1 second *)
+    done;
+    (* After each animation frame, print the bonus and new balance *)
+    Printf.printf "\rBonus: $%.2f" bonus; 
+    flush stdout;                    (* Flush to force immediate printing *)
+    Unix.sleep 1;                    (* Sleep for 1 second *)
+    
+    Printf.printf "\rNew Balance: $%.2f" new_balance;
+    flush stdout;                    (* Flush to force immediate printing *)
+    Unix.sleep 1;                    (* Sleep for 1 second *)
+
+    (* Print the final result after the spinner loop ends *)
+    Printf.printf "\rLottery spin result: $%.2f\nYour new balance: $%.2f\n"
+      bonus new_balance;
+
+    (* Update the balance and continue the program cycle *)
+    change_balance user bonus;
+    program_cycle user ()
+  | "7" ->
       display_title "Goodbye & Good Luck!";
       save_to_file "./data/user_profile.txt" user;
       exit 0
