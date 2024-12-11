@@ -1,6 +1,6 @@
-open Final_project.Api_testing
-open Final_project.Bet
-open Final_project.Match
+open Api_testing
+open Bet
+open Match
 
 type t = {
   mutable balance : float;

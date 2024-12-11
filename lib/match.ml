@@ -12,7 +12,7 @@ let match_odds x = x.match_odds
 let make_match id a b odds = { id; a_side = a; b_side = b; match_odds = odds }
 
 let to_string match_ = 
-  match_.a_side ^ "/" ^ match_.b_side ^ "/(Odds:" ^ match_.match_odds ^ ")"
+  (string_of_int match_.id) ^ "/" ^ match_.a_side ^ "/" ^ match_.b_side ^ "/(Odds:" ^ match_.match_odds ^ ")"
 
 (* Function to convert a string like "TeamA vs TeamB (Odds: 2.5:1)" back into a
    Match.t *)
@@ -21,16 +21,7 @@ let of_string str =
     (* Split on " vs " to separate the two teams *)
     let teams_and_odds = String.split_on_char '/' str in
     match teams_and_odds with
-    | [a_side; b_side; "(Odds:"; odds_with_paren] ->
-      (* Remove the closing parenthesis from the odds string *)
-      let clean_odds = 
-        let clean_odds = String.sub odds_with_paren 0 (String.length odds_with_paren - 1) in
-        if clean_odds = "null" || clean_odds = "" then
-          "N/A"
-        else
-          clean_odds
-      in
-      make_match a_side b_side clean_odds
+    | [id; a_side; b_side; odds_with_paren] -> make_match (int_of_string id) a_side b_side odds_with_paren
     | _ -> failwith "Invalid match string format"
   with exn -> 
     failwith ("Error occured with making match: " ^ str ^ " due to exception: " ^ Printexc.to_string exn)
