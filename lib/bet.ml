@@ -10,7 +10,7 @@ let bet_game bet = bet.game
 let make_bet game team amount = { game; team; amount }
 let to_string bet = 
   let game_str = Match.to_string bet.game in
-  "Game:" ^ game_str ^ ", Team:" ^ bet.team ^ ", Amount: " ^ (string_of_float bet.amount)
+  game_str ^ "," ^ bet.team ^ "," ^ (string_of_float bet.amount)
 
 let of_string str =
   match String.split_on_char ',' str with

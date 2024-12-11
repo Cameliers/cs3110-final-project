@@ -20,42 +20,16 @@ let save_to_file (filename : string) (user : User.t) : unit =
   output_string oc content;
   close_out oc
 
-(* Load the user's profile from a file *)
+(* Takes in a string [filename] that is the file where the user profile is stored and returns a User *)
 let load_from_file (filename : string) : User.t =
   let ic = open_in filename in
-  try
-    (* Read each line of the file *)
-    let balance = float_of_string (input_line ic) in
-    let active_bets = string_to_bets (input_line ic) in
-    let bet_history = string_to_bets (input_line ic) in
-    close_in ic;
+  let balance_line = input_line ic in
+  let active_bets_line = input_line ic in
+  let bet_history_line = input_line ic in
+  close_in ic;
 
-    (* Create a new user and populate its fields *)
-    let user = User.make_user () in
-    User.change_balance user balance;
+  let balance = float_of_string balance_line in
+  let active_bets = string_to_bets active_bets_line in
+  let bet_history = string_to_bets bet_history_line in
 
-    (* Add each active bet back to the user's profile *)
-    List.iter
-      (fun bet ->
-        User.add_bet user (Bet.bet_game bet) (Bet.bet_team bet)
-          (Bet.bet_amount bet))
-      active_bets;
-
-    (* Assuming the User module has a function to add a bet directly to the
-      history, you may need a different approach if this is not allowed *)
-    List.iter
-      (fun bet ->
-        User.add_bet user (Bet.bet_game bet) (Bet.bet_team bet)
-          (Bet.bet_amount bet))
-      bet_history;
-    user
-  with
-  | End_of_file ->
-    close_in_noerr ic;
-    failwith "The user_profile.txt file is malformed or incomplete."
-  | Failure f ->
-    close_in_noerr ic;
-    failwith ("Failed to parse user_profile.txt: " ^ f)
-  | e ->
-    close_in_noerr ic;
-    raise e
+  User.create balance active_bets bet_history

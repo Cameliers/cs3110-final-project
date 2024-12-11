@@ -5,6 +5,7 @@ type t = {
 }
 
 let make_user () = { balance = 1000.0; bets_active = []; bets_history = [] }
+let create balance active_bets bet_history = { balance=balance; bets_active = active_bets; bets_history=bet_history}
 let balance t = t.balance
 let bets_active t = t.bets_active
 let bets_history t = t.bets_history

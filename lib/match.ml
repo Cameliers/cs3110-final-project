@@ -10,13 +10,13 @@ let match_odds x = x.match_odds
 let make_match a b odds = { a_side = a; b_side = b; match_odds = odds }
 
 let to_string match_ = 
-  "" ^ match_.a_side ^ " vs " ^ match_.b_side ^ "(Odds: " ^ match_.match_odds ^ ")"
+  match_.a_side ^ "|vs|" ^ match_.b_side ^ "|(Odds: " ^ match_.match_odds ^ ")"
 
 (* Function to convert a string like "TeamA vs TeamB (Odds: 2.5:1)" back into a Match.t *)
 let of_string str =
   try 
     (* Split on " vs " to separate the two teams *)
-    let teams_and_odds = String.split_on_char ' ' str in
+    let teams_and_odds = String.split_on_char '-' str in
     match teams_and_odds with
     | [a_side; "vs"; b_side; "(Odds:"; odds_with_paren] ->
       (* Remove the closing parenthesis from the odds string *)
@@ -24,4 +24,4 @@ let of_string str =
       make_match a_side b_side clean_odds
     | _ -> failwith "Invalid match string format"
   with _ -> 
-    failwith ("Invalid format for match string: " ^ str)
+    failwith ("Error occured with making match: " ^ str)

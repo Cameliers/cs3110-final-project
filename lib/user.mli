@@ -4,6 +4,9 @@ val make_user : unit -> t
 (** Makes a record for the user with a balance of $0, empty active bets list,
     empty bets history list, and auto bet set to false. *)
 
+val create : float -> Bet.t list -> Bet.t list -> t
+(** Generates a new user with the input parameters*)
+
 val balance : t -> float
 (** Returns the user balance. *)
 

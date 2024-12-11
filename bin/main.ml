@@ -123,7 +123,6 @@ let rec program_cycle user () =
       let amount = prompt_amount user () in
       add_bet user (List.nth matches_list index) team amount;
       print_endline "Added bet!";
-      save_to_file "./data/user_profile.txt" user;
       program_cycle user ()
   | "5" ->
       display_title "Goodbye & Good Luck!";
@@ -139,17 +138,11 @@ let () =
   print_segmentation "*" 30;
   print_endline "* Welcome to Cameliers Sports Betting Center*";
   print_segmentation "*" 30;
-  let user = 
-    if Sys.file_exists "./data/user_profile.txt" then
-      try 
-        load_from_file "./data/user_profile.txt"
-      with e ->
-        Printf.eprintf "Error loading user profile: %s\n" (Printexc.to_string e);
-        print_endline "Creating a new user profile.";
-        make_user ()
-    else begin
-      print_endline "No previous user profile found. Creating new user profile.";
-      make_user ()
-    end
+  let user =
+    let filename = "./data/user_profile.txt" in
+    if Sys.file_exists filename then
+      load_from_file filename  (* Load user profile from file *)
+    else
+      make_user ()  (* Create a new user if the file does not exist *)
   in
   program_cycle user ()
