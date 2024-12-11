@@ -58,7 +58,7 @@ let get_upcoming_matches () : (int * string * string) list =
       | _ -> Lwt.return [] )
 
 (* Fetches the result of a specific match by fixture ID *)
-let get_match_result (fixture_id : int) : int * string * string * string =
+let get_match_result (fixture_id : int) : string =
   let uri =
     Uri.of_string
       (Printf.sprintf "https://v3.football.api-sports.io/fixtures?id=%d"
@@ -89,28 +89,24 @@ let get_match_result (fixture_id : int) : int * string * string * string =
               match_info |> member "fixture" |> member "status"
               |> member "short" |> to_string
             in
-            let result =
-              match status with
-              | "FT" ->
-                  let home_score =
-                    match_info |> member "goals" |> member "home" |> to_int
-                  in
-                  let away_score =
-                    match_info |> member "goals" |> member "away" |> to_int
-                  in
-                  if home_score > away_score then "Home Win"
-                  else if away_score > home_score then "Away Win"
-                  else "Draw"
-              | "NS" -> "Not Finished"
-              | "CANC" -> "Cancelled"
-              | _ -> "Unknown Status"
-            in
-            (fixture_id, home_team, away_team, result)
+            match status with
+            | "FT" ->
+                let home_score =
+                  match_info |> member "goals" |> member "home" |> to_int
+                in
+                let away_score =
+                  match_info |> member "goals" |> member "away" |> to_int
+                in
+                if home_score > away_score then home_team
+                else if away_score > home_score then away_team
+                else "Draw"
+            | "NS" -> "Not Finished"
+            | "CANC" -> "Cancelled"
+            | _ -> "Unknown Status"
           with
-          | Yojson.Json_error _ ->
-              (fixture_id, "", "", "Error parsing match result")
-          | _ -> (fixture_id, "", "", "Unexpected error"))
-      | _ -> Lwt.return (fixture_id, "", "", "Error fetching match result") )
+          | Yojson.Json_error _ -> "Error parsing match result"
+          | _ -> "Unexpected error")
+      | _ -> Lwt.return "Error fetching match result" )
 
 (* Example usage *)
 let () =
@@ -123,7 +119,4 @@ let () =
   (* Example to fetch match results *)
   let example_fixture_id = 123456 (* Replace with an actual fixture ID *) in
   let match_result = get_match_result example_fixture_id in
-  match match_result with
-  | id, home, away, result ->
-      Printf.printf "Match Result: %d, %s vs %s, Result: %s\n" id home away
-        result
+  Printf.printf "Match Result: %s\n" match_result
