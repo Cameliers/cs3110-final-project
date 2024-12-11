@@ -87,12 +87,13 @@ let rec prompt_amount_with_cancel user () =
         let amount = float_of_string input in
         `Value amount
       with Failure _ ->
-        print_endline "Invalid input. Please enter a valid amount.";
+        display_title "Invalid input. Please enter a valid amount.";
         prompt_amount_with_cancel user ())
 
 (* Prompt the user for an active bet index with a cancel option *)
 let rec prompt_active_bet_index_with_cancel active_bets =
-  print_endline "Enter the number of the bet you want to modify (C to cancel):";
+  print_endline
+    "\nEnter the number of the bet you want to modify (C to cancel): ";
   match read_line () with
   | "C" | "c" -> `Cancel
   | input -> (
@@ -101,10 +102,10 @@ let rec prompt_active_bet_index_with_cancel active_bets =
         if number >= 1 && number <= List.length active_bets then
           `Value (number - 1)
         else (
-          print_endline "Please choose a valid bet number from the list.";
+          display_title "Please choose a valid bet number from the list.";
           prompt_active_bet_index_with_cancel active_bets)
       with Failure _ ->
-        print_endline "Invalid input. Please enter a number.";
+        display_title "Invalid input. Please enter a number.";
         prompt_active_bet_index_with_cancel active_bets)
 
 (* Prompt the user for additional amount to increase a bet with cancel *)
@@ -123,7 +124,7 @@ let rec prompt_additional_amount_with_cancel user () =
             (balance user);
           prompt_additional_amount_with_cancel user ())
       with Failure _ ->
-        print_endline "Invalid input. Please enter a valid amount.";
+        display_title "Invalid input. Please enter a valid amount.";
         prompt_additional_amount_with_cancel user ())
 
 (* Function to handle the active bets menu *)
@@ -139,10 +140,10 @@ let rec active_bets_menu user active_bet_list =
       active_bet_list
   in
   let final_string =
-    if active_bet_string_list = [] then "\nCurrently no active bets placed."
+    if active_bet_string_list = [] then "Currently no active bets placed."
     else String.concat "\n" active_bet_string_list
   in
-  print_endline ("Current Active Bets:\n" ^ final_string);
+  print_endline ("Current Active Bets: " ^ final_string);
 
   if active_bet_list = [] then (
     print_newline ();
@@ -151,13 +152,16 @@ let rec active_bets_menu user active_bet_list =
     `Return_to_main)
   else (
     print_newline ();
-    print_endline "Active Bets Menu:";
+    display_title " Active bets menu; ";
     print_endline "(1) Cancel a bet";
     print_endline "(2) Increase bet amount";
-    print_endline "(C) Return to main menu";
-    match read_line () with
-    | "C" | "c" ->
-        print_endline "Returning to main menu.";
+    print_endline "(3) Return to main menu";
+
+    match ask_user "\nEnter number: " with
+    | "3" ->
+        print_newline ();
+        display_title "Returning to main menu.";
+        print_newline ();
         `Return_to_main
     | "1" -> (
         match prompt_active_bet_index_with_cancel active_bet_list with
@@ -176,29 +180,24 @@ let rec active_bets_menu user active_bet_list =
             active_bets_menu user active_bet_list
         | `Value bet_index -> (
             let bet_to_increase = List.nth active_bet_list bet_index in
-            print_endline
+            print_newline ();
+            display_title
               (Printf.sprintf
                  "Current bet amount: $%.2f. How much do you want to add?"
                  (bet_amount bet_to_increase));
+            print_newline ();
             match prompt_additional_amount_with_cancel user () with
             | `Cancel ->
                 print_endline "Action canceled. Returning to active bets menu.";
                 active_bets_menu user active_bet_list
             | `Value additional_amount ->
-                (* Increase the bet amount. We assume we have a function like
-                   `increase_bet` or we can re-implement it. If not, we can
-                   remove the old bet and add a new one with the updated
-                   amount. *)
-                let new_amount =
-                  bet_amount bet_to_increase +. additional_amount
-                in
-                remove_bet user bet_to_increase;
-                add_bet user (bet_game bet_to_increase)
-                  (bet_team bet_to_increase) new_amount;
+                modify_bet user bet_to_increase additional_amount;
                 print_endline "Bet amount successfully increased!";
                 `Refresh))
     | _ ->
-        print_endline "Invalid choice. Returning to active bets menu.";
+        print_newline ();
+        display_title "Invalid choice. Returning to active bets menu.";
+        print_newline ();
         active_bets_menu user active_bet_list)
 
 (* [program_cycle] a Function that acts as the front/landing page of the
@@ -209,7 +208,7 @@ let rec program_cycle user () =
   match ask_user "\nEnter Number: " with
   | "1" ->
       print_newline ();
-      print_endline ("Current Balance: " ^ string_of_float (balance user));
+      display_title ("Current Balance: " ^ string_of_float (balance user));
       print_newline ();
       program_cycle user ()
   | "2" ->
@@ -243,6 +242,7 @@ let rec program_cycle user () =
         if completed_bet_string_list = [] then "No completed bets."
         else new_string
       in
+      print_newline ();
       print_endline ("Completed Bet History:\n" ^ final_string);
       print_newline ();
       program_cycle user ()
@@ -266,7 +266,9 @@ let rec program_cycle user () =
               | `Value amount -> (
                   try
                     add_bet user (List.nth matches_list index) team amount;
-                    print_endline "Bet successfully placed!"
+                    print_newline ();
+                    print_endline "Bet successfully placed!";
+                    program_cycle user ()
                   with Insufficient_Balance ->
                     Printf.printf
                       "Your balance is %.2f. Please enter an amount within \
@@ -274,7 +276,9 @@ let rec program_cycle user () =
                       (balance user);
                     program_cycle user ()))))
   | "6" ->
+      print_newline ();
       display_title "Goodbye & Good Luck!";
+      print_newline ();
       save_to_file "./data/user_profile.txt" user;
       exit 0
   | _ ->
