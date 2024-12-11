@@ -21,7 +21,6 @@ let change_balance t change = t.balance <- t.balance +. change
 let add_bet t game team amount =
   let bet = Bet.make_bet game team amount in
   t.bets_active <- bet :: t.bets_active;
-  t.bets_history <- bet :: t.bets_history;
   t.balance <- t.balance -. amount
 
 let complete_bets t =
