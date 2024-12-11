@@ -1,14 +1,16 @@
-(* Helper to convert a list of bets to a string *)
+(* Helper to convert a list of bets to a string in the format: [ Bet1; Bet2; ... ] *)
 let bets_to_string (bets : Bet.t list) : string =
-  bets
-  |> List.map Bet.to_string
-     (* Assumes there is a [to_string] function in the Bet module *)
-  |> String.concat ";"
+  let bet_strings = List.map Bet.to_string bets in
+  "[" ^ String.concat "; " bet_strings ^ "]"  (* Adding the square brackets *)
 
-(* Helper to convert a string to a list of bets *)
+(* Helper to convert a string in the format: [ Bet1; Bet2; ... ] back to a list of bets *)
 let string_to_bets (str : string) : Bet.t list =
-  if str = "" then []
-  else str |> String.split_on_char ';' |> List.map Bet.of_string
+  if str = "[]" then []  (* Handle the case where there are no bets *)
+  else
+    (* Remove the surrounding brackets and split by "; " to get individual bets *)
+    let stripped_str = String.sub str 1 (String.length str - 2) in
+    let bet_strings = String.split_on_char ';' stripped_str in
+    List.map Bet.of_string bet_strings
 
 (* Save the user's profile to a file *)
 let save_to_file (filename : string) (user : User.t) : unit =
