@@ -40,12 +40,6 @@ val save_to_file : string -> User.t -> unit
 val load_from_file : string -> User.t
 (** [load_from_file filename] loads a user profile from the file specified by
     [filename]. The file is expected to contain the user's balance, active bets,
-<<<<<<< HEAD
-    and bet history in the appropriate format. Raises an exception if the file
-    is malformed. *)
-
-=======
     bets history, and balance history in the formats handled by the helper
     functions. Returns a [User.t] representing the loaded user. Raises an
     exception if the file is malformed or cannot be parsed. *)
->>>>>>> ac059284bf068d85f06ce0b1ad65e5c462def8e8
