@@ -24,7 +24,11 @@ val format_date : float -> string
 (** [format_date timestamp] converts a Unix timestamp to a formatted date string
     (YYYY-MM-DD) *)
 
-val get_match_winner_odds : int -> (float * float * float) option
+val get_match_winner_odds :
+  ?http_get:
+    (Uri.t -> Cohttp.Header.t -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t) ->
+  int ->
+  (float * float * float) option
 (** Fetches the match winner odds for a given fixture ID from the API.
     @param fixture_id:
       An integer representing the fixture ID for which the odds are to be
