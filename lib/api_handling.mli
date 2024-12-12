@@ -15,4 +15,11 @@ val get_match_result : int -> string
 (** [format_date timestamp] converts a Unix timestamp to a formatted date string (YYYY-MM-DD) *)
 val format_date : float -> string
 
+(** 
+  Fetches the match winner odds for a given fixture ID from the API.
+  @param fixture_id: An integer representing the fixture ID for which the odds 
+  are to be fetched.
+  @return: An option type that contains a tuple of three floats representing the 
+  odds for the home team, draw, and away team, or [None] if the odds are not 
+  available or an error occurs. *)
 val get_match_winner_odds : int -> (float * float * float) option
