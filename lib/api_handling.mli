@@ -11,3 +11,4 @@ val get_upcoming_matches : unit -> (int * string * string) list
    match was cancelled. - "Unknown Status" if the match status is unclear. In
    case of errors, returns appropriate error messages as strings. *)
 val get_match_result : int -> string
+val get_match_winner_odds : int -> (float * float * float) option

@@ -45,32 +45,32 @@ let balance_history t = t.balance_history
 
 let remove_bet t bet_to_remove =
   let amount = bet_amount bet_to_remove in
-  change_balance t amount; (* Add the value of the bet back to the user's balance *)
+  change_balance t amount;
+  (* Add the value of the bet back to the user's balance *)
   t.bets_active <- List.filter (fun bet -> bet <> bet_to_remove) t.bets_active
 
 let modify_bet t bet_to_modify extra_amount =
   if extra_amount > 0. && extra_amount < t.balance then
-    let updated_bets = List.map 
-      (fun bet -> 
-        if bet = bet_to_modify then 
-          let new_amount = bet_amount bet +. extra_amount in
-          change_balance t (-1. *. extra_amount); (* Deduct from balance *)
-          make_bet (bet_game bet) (bet_team bet) new_amount
-        else bet
-      ) 
-      t.bets_active 
+    let updated_bets =
+      List.map
+        (fun bet ->
+          if bet = bet_to_modify then (
+            let new_amount = bet_amount bet +. extra_amount in
+            change_balance t (-1. *. extra_amount);
+            (* Deduct from balance *)
+            make_bet (bet_game bet) (bet_team bet) new_amount)
+          else bet)
+        t.bets_active
     in
     t.bets_active <- updated_bets
-  else
-    raise Insufficient_Balance
+  else raise Insufficient_Balance
 
 let add_bet t game team amount =
-  if amount > 0. && amount < t.balance then
+  if amount > 0. && amount < t.balance then (
     let bet = Bet.make_bet game team amount in
     t.bets_active <- bet :: t.bets_active;
-    change_balance t (-1. *. amount)
-  else
-    raise Insufficient_Balance
+    change_balance t (-1. *. amount))
+  else raise Insufficient_Balance
 
 let complete_bets t =
   List.iter
