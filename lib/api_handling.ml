@@ -167,9 +167,9 @@ let get_team_goals (team_name : string) : (int * int) option =
               with Yojson.Json_error _ | Failure _ -> None)
           | _ -> Lwt.return None )
 
-let team_goals = get_team_goals "Arsenal";;
-
-match team_goals with
-| Some (scored, conceded) ->
-    Printf.printf "Goals Scored: %d, Goals Conceded: %d\n" scored conceded
-| None -> Printf.printf "Failed to fetch team goals.\n"
+let () =
+  (* Replace "Arsenal" with the team name you want to test *)
+  match get_team_goals "Arsenal" with
+  | Some (scored, conceded) ->
+      Printf.printf "Goals Scored: %d, Goals Conceded: %d\n" scored conceded
+  | None -> Printf.printf "Failed to fetch team goals.\n"
