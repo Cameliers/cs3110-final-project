@@ -235,8 +235,8 @@ let test_save_and_load_user _ =
 
 (** let test_save_and_load_user_with_bets _ = let filename =
     "test_user_with_bets.txt" in let user = Final_project.User.make_user () in
-    let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in let
-    match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" in
+    let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in let match2
+    = Final_project.Match.make_match 2 "TeamC" "TeamD" in
     Final_project.User.add_bet user match1 "TeamA" 100.0;
     Final_project.User.add_bet user match2 "TeamC" 200.0;
     Final_project.Profile.save_to_file filename user; let loaded_user =
@@ -399,6 +399,76 @@ let test_format_date _ =
   let result = Final_project.Api_handling.format_date timestamp in
   assert_equal "2021-01-01" result
 
+(* Mock HTTP GET function *)
+let mock_http_get uri _headers =
+  let uri_string = Uri.to_string uri in
+  if
+    String.starts_with ~prefix:"https://v3.football.api-sports.io/fixtures?date"
+      uri_string
+  then
+    Lwt.return
+      ( Cohttp.Response.make ~status:`OK (),
+        Cohttp_lwt.Body.of_string
+          "{\"response\": [{\"fixture\": {\"id\": 1}, \"teams\": {\"home\": \
+           {\"name\": \"Team A\"}, \"away\": {\"name\": \"Team B\"}}}]}" )
+  else if
+    String.starts_with ~prefix:"https://v3.football.api-sports.io/fixtures?id"
+      uri_string
+  then
+    Lwt.return
+      ( Cohttp.Response.make ~status:`OK (),
+        Cohttp_lwt.Body.of_string
+          "{\"response\": [{\"fixture\": {\"status\": {\"short\": \"FT\"}}, \
+           \"teams\": {\"home\": {\"name\": \"Team A\"}, \"away\": {\"name\": \
+           \"Team B\"}}, \"goals\": {\"home\": 2, \"away\": 1}}]}" )
+  else if
+    String.starts_with ~prefix:"https://v3.football.api-sports.io/odds?fixture"
+      uri_string
+  then
+    Lwt.return
+      ( Cohttp.Response.make ~status:`OK (),
+        Cohttp_lwt.Body.of_string
+          "{\"response\": [{\"bookmakers\": [{\"bets\": [{\"name\": \"Match \
+           Winner\", \"values\": [{\"value\": \"Home\", \"odd\": \"1.5\"}, \
+           {\"value\": \"Draw\", \"odd\": \"3.0\"}, {\"value\": \"Away\", \
+           \"odd\": \"2.5\"}]}]}]}]}" )
+  else Lwt.fail_with "Unmocked URI"
+
+(* Test get_upcoming_matches function with mocked API response *)
+let test_get_upcoming_matches _ =
+  let expected = [ (1, "Team A", "Team B") ] in
+  let actual =
+    Final_project.Api_handling.get_upcoming_matches ~http_get:mock_http_get ()
+  in
+  assert_equal
+    ~printer:(fun x ->
+      String.concat "; "
+        (List.map
+           (fun (id, home, away) -> Printf.sprintf "(%d, %s, %s)" id home away)
+           x))
+    expected actual
+
+(* Test get_match_result function with mocked API response *)
+let test_get_match_result _ =
+  let expected = "Team A" in
+  let actual =
+    Final_project.Api_handling.get_match_result ~http_get:mock_http_get 1
+  in
+  assert_equal ~printer:(fun x -> x) expected actual
+
+(* Test get_match_winner_odds function with mocked API response *)
+let test_get_match_winner_odds _ =
+  let expected = Some (1.5, 3.0, 2.5) in
+  let actual =
+    Final_project.Api_handling.get_match_winner_odds ~http_get:mock_http_get 1
+  in
+  assert_equal
+    ~printer:(fun x ->
+      match x with
+      | Some (h, d, a) -> Printf.sprintf "Some (%f, %f, %f)" h d a
+      | None -> "None")
+    expected actual
+
 let tests =
   "test_user_module"
   >::: [
@@ -471,10 +541,10 @@ let tests =
          "test_poisson_pmf_zero_lambda" >:: test_poisson_pmf_zero_lambda;
          "test_poisson_pmf_zero_k" >:: test_poisson_pmf_zero_k;
          "test_match_id" >:: test_match_id;
-          "test_a_side" >:: test_a_side;
-          "test_b_side" >:: test_b_side;
-          "test_to_string" >:: test_to_string;
-          "test_of_string" >:: test_of_string;
+         "test_a_side" >:: test_a_side;
+         "test_b_side" >:: test_b_side;
+         "test_to_string" >:: test_to_string;
+         "test_of_string" >:: test_of_string;
          "test_match_odds_skewed" >:: test_match_odds_skewed;
          "test_match_odds_equal" >:: test_match_odds_equal;
          "test_match_odds_no_data" >:: test_match_odds_no_data;
@@ -487,6 +557,9 @@ let tests =
          "test_modify_bet_insufficient_balance"
          >:: test_modify_bet_insufficient_balance;
          "test_format_date" >:: test_format_date;
+         "test_get_upcoming_matches" >:: test_get_upcoming_matches;
+         "test_get_match_result" >:: test_get_match_result;
+         "test_get_match_winner_odds" >:: test_get_match_winner_odds;
        ]
 
 let () = run_test_tt_main tests

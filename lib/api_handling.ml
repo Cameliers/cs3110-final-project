@@ -6,19 +6,20 @@ open Unix
 
 let api_key = "7e640def26ec497616618d5a9f9b99d7"
 
+(* Abstracted HTTP GET function *)
+let http_get uri headers = Client.call ~headers `GET uri
+
 (* Helper function to format Unix timestamp to YYYY-MM-DD *)
 let format_date timestamp =
   let tm = Unix.gmtime timestamp in
   Printf.sprintf "%04d-%02d-%02d" (tm.tm_year + 1900) (tm.tm_mon + 1) tm.tm_mday
 
 (* Fetches a list of upcoming matches for the next day *)
-let get_upcoming_matches () : (int * string * string) list =
+let get_upcoming_matches ?(http_get = http_get) () :
+    (int * string * string) list =
   let today = Unix.time () in
   let next_day = today +. 86400.0 in
-  (* Add 24 hours to get the next day *)
   let date = format_date next_day in
-
-  (* Use the `date` parameter to fetch matches for the next day *)
   let uri =
     Uri.of_string
       (Printf.sprintf "https://v3.football.api-sports.io/fixtures?date=%s" date)
@@ -29,14 +30,13 @@ let get_upcoming_matches () : (int * string * string) list =
     Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
   in
   Lwt_main.run
-    ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+    ( http_get uri headers >>= fun (resp, body) ->
       match resp.status with
       | `OK -> (
           body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
           try
             let json = Yojson.Basic.from_string body_str in
             let matches = json |> member "response" |> to_list in
-            (* Limit to 10 matches *)
             List.filteri
               (fun i _ -> i < 10)
               (List.map
@@ -60,7 +60,7 @@ let get_upcoming_matches () : (int * string * string) list =
       | _ -> Lwt.return [] )
 
 (* Fetches the result of a specific match by fixture ID *)
-let get_match_result (fixture_id : int) : string =
+let get_match_result ?(http_get = http_get) (fixture_id : int) : string =
   let uri =
     Uri.of_string
       (Printf.sprintf "https://v3.football.api-sports.io/fixtures?id=%d"
@@ -72,7 +72,7 @@ let get_match_result (fixture_id : int) : string =
     Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
   in
   Lwt_main.run
-    ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+    ( http_get uri headers >>= fun (resp, body) ->
       match resp.status with
       | `OK -> (
           body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
@@ -111,7 +111,8 @@ let get_match_result (fixture_id : int) : string =
       | _ -> Lwt.return "Error fetching match result" )
 
 (* Fetches match winner odds for a given fixture ID *)
-let get_match_winner_odds (fixture_id : int) : (float * float * float) option =
+let get_match_winner_odds ?(http_get = http_get) (fixture_id : int) :
+    (float * float * float) option =
   let uri =
     Uri.of_string
       (Printf.sprintf "https://v3.football.api-sports.io/odds?fixture=%d"
@@ -123,14 +124,13 @@ let get_match_winner_odds (fixture_id : int) : (float * float * float) option =
     Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
   in
   Lwt_main.run
-    ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+    ( http_get uri headers >>= fun (resp, body) ->
       match resp.status with
       | `OK -> (
           body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
           try
             let json = Yojson.Basic.from_string body_str in
             let odds_response = json |> member "response" |> to_list in
-
             if odds_response = [] then None
             else
               let bookmaker =
@@ -138,7 +138,6 @@ let get_match_winner_odds (fixture_id : int) : (float * float * float) option =
                 |> List.hd
               in
               let bets = bookmaker |> member "bets" |> to_list in
-
               match
                 List.find_opt
                   (fun bet ->
@@ -148,7 +147,6 @@ let get_match_winner_odds (fixture_id : int) : (float * float * float) option =
               | None -> None
               | Some match_winner_bet ->
                   let values = match_winner_bet |> member "values" |> to_list in
-
                   let home_odd =
                     List.find
                       (fun v -> v |> member "value" |> to_string = "Home")
