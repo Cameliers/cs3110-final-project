@@ -11,12 +11,14 @@ let format_date timestamp =
   let tm = Unix.gmtime timestamp in
   Printf.sprintf "%04d-%02d-%02d" (tm.tm_year + 1900) (tm.tm_mon + 1) tm.tm_mday
 
-(* Fetches a list of upcoming matches for today *)
-let get_upcoming_matches () : (int * string * string) list =
+(* Fetches a list of upcoming matches for the next day *)
+let get_upcoming_matches_next_day () : (int * string * string) list =
   let today = Unix.time () in
-  let date = format_date today in
+  let next_day = today +. 86400.0 in
+  (* Add 24 hours to get the next day *)
+  let date = format_date next_day in
 
-  (* Use the `date` parameter to fetch today's matches *)
+  (* Use the `date` parameter to fetch matches for the next day *)
   let uri =
     Uri.of_string
       (Printf.sprintf "https://v3.football.api-sports.io/fixtures?date=%s" date)

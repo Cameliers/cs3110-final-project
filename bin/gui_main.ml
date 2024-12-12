@@ -146,8 +146,7 @@ let () =
   (* Retrieve and prepare matches for betting *)
   let matches_for_bet =
     ref
-      (get_upcoming_matches ()
-      |> List.map (fun (id, a, b) -> make_match id a b "null"))
+      (get_upcoming_matches () |> List.map (fun (id, a, b) -> make_match id a b))
   in
 
   (* Match Selection HBox *)
@@ -163,8 +162,7 @@ let () =
   let populate_matches_combo () =
     store#clear ();
     matches_for_bet :=
-      get_upcoming_matches ()
-      |> List.map (fun (id, a, b) -> make_match id a b "null");
+      get_upcoming_matches () |> List.map (fun (id, a, b) -> make_match id a b);
     List.iteri
       (fun i m ->
         let row = store#append () in
