@@ -208,21 +208,6 @@ let rec prompt_team_with_cancel index =
         print_newline ();
         prompt_team_with_cancel index)
 
-(* Prompt the user for a betting amount with a cancel option *)
-let rec prompt_amount_with_cancel user () =
-  print_endline "Enter the betting amount (C to cancel):";
-  match read_line () with
-  | "C" | "c" -> `Cancel
-  | input -> (
-      try
-        let amount = float_of_string input in
-        `Value amount
-      with Failure _ ->
-        print_newline ();
-        display_title "Invalid input. Please enter a valid amount.";
-        print_newline ();
-        prompt_amount_with_cancel user ())
-
 (* Prompt the user for an active bet index with a cancel option *)
 let rec prompt_active_bet_index_with_cancel active_bets =
   print_endline
@@ -432,6 +417,34 @@ let rec program_cycle user () =
                        your balance.\n"
                       (balance user);
                     program_cycle user ()))))
+  | "6" ->
+      let bonus = spin_lottery () in
+      let new_balance = balance user +. bonus in
+      print_newline ();
+      display_title "Commence Spinning";
+      print_newline ();
+      for i = 1 to 3 do
+        let str = String.make i '.' in
+        Printf.printf "\rSpinning%s" str;
+        flush stdout;
+        Unix.sleep 1
+      done;
+
+      Printf.printf "\rBonus: $%.2f\n" bonus;
+      flush stdout;
+      Unix.sleep 1;
+
+      Printf.printf "\r\nNew Balance: $%.2f\n" new_balance;
+      flush stdout;
+      Unix.sleep 1;
+
+      print_newline ();
+      Printf.printf "\rLottery spin result: $%.2f\n\nYour new balance: $%.2f\n"
+        bonus new_balance;
+      print_newline ();
+
+      change_balance user bonus;
+      program_cycle user ()
   | "7" ->
       print_newline ();
       display_title "Goodbye & Good Luck!";
