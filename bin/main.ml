@@ -61,10 +61,14 @@ let rec prompt_number_with_cancel () =
         let number = int_of_string input in
         if number >= 1 && number <= 10 then `Value (number - 1)
         else (
-          print_endline "Please choose a valid number from the list.";
+          print_newline ();
+          display_title "Please choose a valid number from the list.";
+          print_newline ();
           prompt_number_with_cancel ())
       with Failure _ ->
-        print_endline "Invalid input. Please enter a number.";
+        print_newline ();
+        display_title "Invalid input. Please enter a number.";
+        print_newline ();
         prompt_number_with_cancel ())
 
 (* Prompt the user for a team with a cancel option *)
@@ -76,7 +80,9 @@ let rec prompt_team_with_cancel index =
   | team ->
       if team = a_side match_data || team = b_side match_data then `Value team
       else (
-        print_endline "Invalid team. Please choose a valid team.";
+        print_newline ();
+        display_title "Invalid team. Please choose a valid team.";
+        print_newline ();
         prompt_team_with_cancel index)
 
 (* Prompt the user for a betting amount with a cancel option *)
@@ -89,7 +95,9 @@ let rec prompt_amount_with_cancel user () =
         let amount = float_of_string input in
         `Value amount
       with Failure _ ->
+        print_newline ();
         display_title "Invalid input. Please enter a valid amount.";
+        print_newline ();
         prompt_amount_with_cancel user ())
 
 (* Prompt the user for an active bet index with a cancel option *)
@@ -104,10 +112,14 @@ let rec prompt_active_bet_index_with_cancel active_bets =
         if number >= 1 && number <= List.length active_bets then
           `Value (number - 1)
         else (
+          print_newline ();
           display_title "Please choose a valid bet number from the list.";
+          print_newline ();
           prompt_active_bet_index_with_cancel active_bets)
       with Failure _ ->
+        print_newline ();
         display_title "Invalid input. Please enter a number.";
+        print_newline ();
         prompt_active_bet_index_with_cancel active_bets)
 
 (* Prompt the user for additional amount to increase a bet with cancel *)
@@ -121,12 +133,16 @@ let rec prompt_additional_amount_with_cancel user () =
         let amount = float_of_string input in
         if amount > 0. && amount <= balance user then `Value amount
         else (
+          print_newline ();
           Printf.printf
             "Your balance is %.2f. Please enter an amount within your balance.\n"
             (balance user);
+          print_newline ();
           prompt_additional_amount_with_cancel user ())
       with Failure _ ->
+        print_newline ();
         display_title "Invalid input. Please enter a valid amount.";
+        print_newline ();
         prompt_additional_amount_with_cancel user ())
 
 (* Function to handle the active bets menu *)
@@ -210,7 +226,7 @@ let rec program_cycle user () =
   match ask_user "\nEnter Number: " with
   | "1" ->
       print_newline ();
-      display_title ("Current Balance: " ^ string_of_float (balance user));
+      display_title ("Current Balance: " ^ string_of_float (balance user) ^ " $");
       print_newline ();
       program_cycle user ()
   | "2" ->
@@ -252,28 +268,36 @@ let rec program_cycle user () =
       print_endline "Choose a match from the matches.";
       match prompt_number_with_cancel () with
       | `Cancel ->
-          print_endline "Action canceled. Returning to the main menu.";
+          print_newline ();
+          display_title "Action canceled. Returning to the main menu.";
+          print_newline ();
           program_cycle user ()
       | `Value index -> (
           match prompt_team_with_cancel index with
           | `Cancel ->
-              print_endline "Action canceled. Returning to the main menu.";
+              print_newline ();
+              display_title "Action canceled. Returning to the main menu.";
+              print_newline ();
               program_cycle user ()
           | `Value team -> (
               let amount = prompt_amount_with_cancel user () in
               match amount with
               | `Cancel ->
-                  print_endline "Action canceled. Returning to the main menu.";
+                  print_newline ();
+                  display_title "Action canceled. Returning to the main menu.";
+                  print_newline ();
                   program_cycle user ()
               | `Value amount -> (
                   try
                     add_bet user (List.nth matches_list index) team amount;
                     print_newline ();
-                    print_endline "Bet successfully placed!";
+                    display_title "Bet successfully placed!";
+                    print_newline ();
                     program_cycle user ()
                   with Insufficient_Balance ->
                     Printf.printf
-                      "Your balance is %.2f. Please enter an amount within \
+                      "\n\
+                       Your balance is %.2f. Please enter an amount within \
                        your balance.\n"
                       (balance user);
                     program_cycle user ()))))
@@ -313,15 +337,21 @@ let rec program_cycle user () =
       change_balance user bonus;
       program_cycle user ()
   | "7" ->
+      print_newline ();
       display_title "Goodbye & Good Luck!";
       print_newline ();
       save_to_file "./data/user_profile.txt" user;
       exit 0
   | _ ->
+      print_newline ();
       display_title
         "Invalid Choice, please enter number *no parenthesis required*.";
+      print_newline ();
       program_cycle user ()
 
+(* [startup] A helper function that is used in the main entry point of the
+   program, meant to both check for completed bets from active bets before
+   lauching program cycle. *)
 let startup user () =
   complete_bets user;
   program_cycle user ()
