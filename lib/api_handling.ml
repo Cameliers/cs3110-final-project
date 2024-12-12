@@ -4,7 +4,7 @@ open Cohttp_lwt_unix
 open Yojson.Basic.Util
 open Unix
 
-let api_key = "6ef209fb12c760d51b9193a4c80cf441"
+let api_key = "5c5356cc20bf95af3d1500342bce061a"
 
 (* Abstracted HTTP GET function *)
 let http_get uri headers = Client.call ~headers `GET uri
@@ -14,15 +14,14 @@ let format_date timestamp =
   let tm = Unix.gmtime timestamp in
   Printf.sprintf "%04d-%02d-%02d" (tm.tm_year + 1900) (tm.tm_mon + 1) tm.tm_mday
 
-(* Fetches a list of upcoming matches for the next day *)
+(* Fetches a list of the next 10 upcoming matches that have not started *)
 let get_upcoming_matches ?(http_get = http_get) () :
     (int * string * string) list =
-  let today = Unix.time () in
-  let next_day = today +. 86400.0 in
-  let date = format_date next_day in
+  let today = Unix.time () |> format_date in
   let uri =
     Uri.of_string
-      (Printf.sprintf "https://v3.football.api-sports.io/fixtures?date=%s" date)
+      (Printf.sprintf
+         "https://v3.football.api-sports.io/fixtures?date=%s&status=NS" today)
   in
   let headers =
     Header.init () |> fun h ->
