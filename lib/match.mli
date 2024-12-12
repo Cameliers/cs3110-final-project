@@ -17,9 +17,9 @@ val b_side : t -> string
 val match_odds : t -> string
 (** [match_odds x] returns the odds associated with match [x], as a string. *)
 
-val make_match : int -> string -> string -> string -> t
+val make_match : int -> string -> string -> t
 (** [make_match id a b odds] creates a new match with identifier [id], a-side
-    team [a], b-side team [b], and odds [odds]. *)
+    team [a], b-side team [b]. *)
 
 val to_string : t -> string
 (** [to_string match] returns a string representation of [match]. The string

@@ -42,13 +42,15 @@ let display_menu () =
 
 let matches_string =
   get_upcoming_matches ()
-  |> List.mapi (fun i (_, a, b) ->
-         "(" ^ string_of_int (i + 1) ^ ") " ^ a ^ " vs " ^ b)
+  |> List.mapi (fun i (id, a, b) ->
+         "("
+         ^ string_of_int (i + 1)
+         ^ ") " ^ a ^ " vs " ^ b ^ " id: " ^ string_of_int id)
   |> String.concat "\n"
 
 let matches_list =
   List.map
-    (fun ((id : int), a, b) -> make_match id a b "null")
+    (fun ((id : int), a, b) -> make_match id a b)
     (get_upcoming_matches ())
 
 (* A helper function to convert balance history into a nicely formatted
