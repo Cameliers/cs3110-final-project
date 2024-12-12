@@ -8,3 +8,4 @@ Authors:
 
 Citations:
 - Football Match API: https://www.football-data.org/
+- Used AI help extensively to support development processes throughout driver program, Bet, Match, User, Profile, API Handler, Lottery, and Bet Odds compilation units

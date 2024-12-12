@@ -39,7 +39,7 @@ let test_make_user_no_bet_history _ =
 
 let test_make_user_modify_bet_list _ =
   let user = Final_project.User.make_user () in
-  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   let bet = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
   Final_project.User.add_bet user match1 "TeamA" 100.0;
   assert_equal [ bet ] (Final_project.User.bets_active user);
@@ -178,7 +178,7 @@ let test_change_balance_small_decrements _ =
 
 let test_modify_bet_valid _ =
   let user = Final_project.User.make_user () in
-  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   let bet = Final_project.Bet.make_bet game "TeamA" 100.0 in
   Final_project.User.add_bet user game "TeamA" 100.0;
   (* Add the initial bet *)
@@ -190,7 +190,7 @@ let test_modify_bet_valid _ =
 
 let test_modify_bet_insufficient_balance _ =
   let user = Final_project.User.make_user () in
-  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   let bet = Final_project.Bet.make_bet game "TeamA" 100.0 in
   Final_project.User.add_bet user game "TeamA" 100.0;
   assert_raises Final_project.User.Insufficient_Balance (fun () ->
@@ -199,8 +199,8 @@ let test_modify_bet_insufficient_balance _ =
   assert_equal 1 (List.length (Final_project.User.bets_active user))
 
 let test_bets_to_string_multiple _ =
-  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
-  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" in
   let bet1 = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
   let bet2 = Final_project.Bet.make_bet match2 "TeamC" 200.0 in
   let bets = [ bet1; bet2 ] in
@@ -235,8 +235,8 @@ let test_save_and_load_user _ =
 
 (** let test_save_and_load_user_with_bets _ = let filename =
     "test_user_with_bets.txt" in let user = Final_project.User.make_user () in
-    let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in let
-    match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
+    let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in let
+    match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" in
     Final_project.User.add_bet user match1 "TeamA" 100.0;
     Final_project.User.add_bet user match2 "TeamC" 200.0;
     Final_project.Profile.save_to_file filename user; let loaded_user =
@@ -253,9 +253,9 @@ let test_bets_to_string_empty _ =
   assert_equal "[]" result
 
 let test_bets_to_string_complex _ =
-  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
-  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
-  let match3 = Final_project.Match.make_match 3 "TeamE" "TeamF" "1:1" in
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" in
+  let match3 = Final_project.Match.make_match 3 "TeamE" "TeamF" in
   let bet1 = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
   let bet2 = Final_project.Bet.make_bet match2 "TeamD" 50.0 in
   let bet3 = Final_project.Bet.make_bet match3 "TeamE" 75.0 in
@@ -277,7 +277,7 @@ let test_string_to_bets_malformed _ =
       Final_project.Profile.string_to_bets str)
 
 let test_string_to_bets_partial _ =
-  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   let bet1 = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
   let str = "[" ^ Final_project.Bet.to_string bet1 ^ "; INVALID]" in
   assert_raises (Failure "Invalid bet string format") (fun () ->
@@ -294,8 +294,8 @@ let test_user_change_balance _ =
 
 let test_user_active_bets _ =
   let user = Final_project.User.make_user () in
-  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
-  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" in
   Final_project.User.add_bet user match1 "TeamA" 100.0;
   Final_project.User.add_bet user match2 "TeamD" 200.0;
   let active_bets = Final_project.User.bets_active user in
@@ -334,33 +334,28 @@ let test_poisson_pmf_zero_k _ =
 
 (* Define test cases *)
 let test_match_id _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal 1 (Final_project.Match.match_id match_)
 
 let test_a_side _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal "TeamA" (Final_project.Match.a_side match_)
 
 let test_b_side _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal "TeamB" (Final_project.Match.b_side match_)
 
-let test_match_odds _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
-  assert_equal "2.5:1" (Final_project.Match.match_odds match_)
-
 let test_to_string _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
-  let expected = "1/TeamA/TeamB/(Odds:2.5:1)" in
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  let expected = "1/TeamA/TeamB" in
   assert_equal expected (Final_project.Match.to_string match_)
 
 let test_of_string _ =
-  let match_str = "1/TeamA/TeamB/(Odds:2.5:1)" in
+  let match_str = "1/TeamA/TeamB" in
   let match_ = Final_project.Match.of_string match_str in
   assert_equal 1 (Final_project.Match.match_id match_);
   assert_equal "TeamA" (Final_project.Match.a_side match_);
-  assert_equal "TeamB" (Final_project.Match.b_side match_);
-  assert_equal "(Odds:2.5:1)" (Final_project.Match.match_odds match_)
+  assert_equal "TeamB" (Final_project.Match.b_side match_)
 
 let test_match_odds_skewed _ =
   let a_results = [ (10.0, 0.0); (10.0, 0.0) ] in
@@ -478,7 +473,6 @@ let tests =
          "test_match_id" >:: test_match_id;
           "test_a_side" >:: test_a_side;
           "test_b_side" >:: test_b_side;
-          "test_match_odds" >:: test_match_odds;
           "test_to_string" >:: test_to_string;
           "test_of_string" >:: test_of_string;
          "test_match_odds_skewed" >:: test_match_odds_skewed;
