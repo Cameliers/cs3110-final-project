@@ -4,7 +4,7 @@ open Cohttp_lwt_unix
 open Yojson.Basic.Util
 open Unix
 
-let api_key = "cb5a2c14976a9dd0786cb9d59957702e"
+let api_key = "7e640def26ec497616618d5a9f9b99d7"
 
 (* Helper function to format Unix timestamp to YYYY-MM-DD *)
 let format_date timestamp =
@@ -107,3 +107,69 @@ let get_match_result (fixture_id : int) : string =
           | Yojson.Json_error _ -> "Error parsing match result"
           | _ -> "Unexpected error")
       | _ -> Lwt.return "Error fetching match result" )
+
+(* Fetches total goals scored and conceded for a team *)
+let get_team_goals (team_name : string) : (int * int) option =
+  let team_id =
+    let uri =
+      Uri.of_string
+        (Printf.sprintf "https://v3.football.api-sports.io/teams?search=%s"
+           (Uri.pct_encode team_name))
+    in
+    let headers =
+      Header.init () |> fun h ->
+      Header.add h "x-rapidapi-key" api_key |> fun h ->
+      Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
+    in
+    Lwt_main.run
+      ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+        match resp.status with
+        | `OK -> (
+            body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
+            try
+              let json = Yojson.Basic.from_string body_str in
+              let team = json |> member "response" |> to_list |> List.hd in
+              Some (team |> member "team" |> member "id" |> to_int)
+            with Yojson.Json_error _ | Failure _ -> None)
+        | _ -> Lwt.return None )
+  in
+  match team_id with
+  | None -> None
+  | Some id ->
+      let uri =
+        Uri.of_string
+          (Printf.sprintf
+             "https://v3.football.api-sports.io/teams/statistics?team=%d&season=%d"
+             id 2024)
+      in
+      let headers =
+        Header.init () |> fun h ->
+        Header.add h "x-rapidapi-key" api_key |> fun h ->
+        Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
+      in
+      Lwt_main.run
+        ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+          match resp.status with
+          | `OK -> (
+              body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
+              try
+                let json = Yojson.Basic.from_string body_str in
+                let goals_for =
+                  json |> member "response" |> member "goals" |> member "for"
+                  |> member "total" |> member "total" |> to_int
+                in
+                let goals_against =
+                  json |> member "response" |> member "goals"
+                  |> member "against" |> member "total" |> member "total"
+                  |> to_int
+                in
+                Some (goals_for, goals_against)
+              with Yojson.Json_error _ | Failure _ -> None)
+          | _ -> Lwt.return None )
+
+let () =
+  (* Replace "Arsenal" with the team name you want to test *)
+  match get_team_goals "Arsenal" with
+  | Some (scored, conceded) ->
+      Printf.printf "Goals Scored: %d, Goals Conceded: %d\n" scored conceded
+  | None -> Printf.printf "Failed to fetch team goals.\n"
