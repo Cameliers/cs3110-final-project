@@ -322,7 +322,11 @@ let rec program_cycle user () =
         "Invalid Choice, please enter number *no parenthesis required*.";
       program_cycle user ()
 
-(* Entry point *)
+let startup user () =
+  complete_bets user;
+  program_cycle user ()
+
+(* Main entry *)
 let () =
   print_segmentation "*" 30;
   print_endline "* Welcome to Cameliers Sports Betting Center *";
@@ -333,4 +337,4 @@ let () =
       load_from_file filename (* Load user profile from file *)
     else make_user () (* Create a new user if the file does not exist *)
   in
-  program_cycle user ()
+  startup user ()
