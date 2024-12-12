@@ -279,6 +279,127 @@ let test_user_active_bets _ =
   let active_bets = Final_project.User.bets_active user in
   assert_equal 2 (List.length active_bets)
 
+let test_average_nonempty _ =
+  let lst = [ 1.0; 2.0; 3.0; 4.0; 5.0 ] in
+  assert_equal 3.0 (Final_project.Bet_odds.average lst)
+
+let test_average_empty _ =
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.average [])
+
+let test_average _ =
+  let lst = [ 42.0 ] in
+  assert_equal 42.0 (Final_project.Bet_odds.average lst)
+
+let test_avg_for_against_nonempty _ =
+  let results = [ (2.0, 1.0); (3.0, 2.0); (1.0, 1.0) ] in
+  assert_equal (2.0, 1.3333333333333333)
+    (Final_project.Bet_odds.avg_for_against results)
+
+let test_avg_for_against_empty _ =
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.avg_for_against [])
+
+let test_avg_for_against_one _ =
+  let results = [ (4.0, 3.0) ] in
+  assert_equal (4.0, 3.0) (Final_project.Bet_odds.avg_for_against results)
+
+let test_poisson_pmf_valid _ =
+  assert_equal 0.18393972058572117 (Final_project.Bet_odds.poisson_pmf 1.0 1)
+
+let test_poisson_pmf_zero_lambda _ =
+  assert_equal 0.0 (Final_project.Bet_odds.poisson_pmf 0.0 1)
+
+let test_poisson_pmf_zero_k _ =
+  assert_equal 0.36787944117144233 (Final_project.Bet_odds.poisson_pmf 1.0 0)
+
+let test_poisson_pmf_large_k _ =
+  assert_equal 2.061153622438558e-09 (Final_project.Bet_odds.poisson_pmf 1.0 20)
+
+let test_poisson_pmf_large_lambda _ =
+  assert_equal 0.003865920139472804 (Final_project.Bet_odds.poisson_pmf 10.0 15)
+
+let test_match_odds_simple _ =
+  let a_results = [ (2.0, 1.0); (3.0, 2.0); (1.0, 1.0) ] in
+  let b_results = [ (1.0, 0.0); (2.0, 2.0); (0.0, 1.0) ] in
+  assert_equal "3 to 2" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_skewed _ =
+  let a_results = [ (10.0, 0.0); (10.0, 0.0) ] in
+  let b_results = [ (0.0, 10.0); (0.0, 10.0) ] in
+  assert_equal "100 to 1"
+    (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_equal _ =
+  let a_results = [ (1.0, 1.0) ] in
+  let b_results = [ (1.0, 1.0) ] in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_no_data _ =
+  let a_results = [] in
+  let b_results = [] in
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_partial_data _ =
+  let a_results = [ (2.0, 1.0) ] in
+  let b_results = [] in
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_high_scoring _ =
+  let a_results = [ (50.0, 40.0); (60.0, 50.0) ] in
+  let b_results = [ (40.0, 50.0); (50.0, 60.0) ] in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_low_scoring _ =
+  let a_results = [ (0.5, 0.3); (0.4, 0.2) ] in
+  let b_results = [ (0.3, 0.5); (0.2, 0.4) ] in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_poisson_pmf_zero_lambda_and_k _ =
+  assert_equal 1.0 (Final_project.Bet_odds.poisson_pmf 0.0 0)
+
+let test_poisson_pmf_large_lambda_and_k _ =
+  assert_equal 1.7558333127022498e-27
+    (Final_project.Bet_odds.poisson_pmf 15.0 30)
+
+let test_match_odds_negative_results _ =
+  let a_results = [ (-2.0, -1.0) ] in
+  let b_results = [ (-1.0, -2.0) ] in
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_average_negative_numbers _ =
+  let lst = [ -3.0; -6.0; -9.0 ] in
+  assert_equal (-6.0) (Final_project.Bet_odds.average lst)
+
+let test_avg_for_against_negative_numbers _ =
+  let results = [ (-2.0, -3.0); (-4.0, -6.0) ] in
+  assert_raises Final_project.Bet_odds.InvalidData (fun () ->
+      Final_project.Bet_odds.avg_for_against results)
+
+let test_poisson_pmf_fractional_lambda _ =
+  assert_equal 0.121254490961273 (Final_project.Bet_odds.poisson_pmf 2.5 3)
+
+let test_match_odds_fractional_results _ =
+  let a_results = [ (1.5, 2.5); (2.0, 1.0) ] in
+  let b_results = [ (1.0, 2.0); (1.5, 2.5) ] in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_match_odds_large_data _ =
+  let a_results =
+    List.init 100 (fun i -> (float_of_int (i + 1), float_of_int (i + 2)))
+  in
+  let b_results =
+    List.init 100 (fun i -> (float_of_int (i + 2), float_of_int (i + 1)))
+  in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+
+let test_average_large_list _ =
+  let lst = List.init 1000 (fun i -> float_of_int (i + 1)) in
+  assert_equal 500.5 (Final_project.Bet_odds.average lst)
+
 let tests =
   "test_user_module"
   >::: [
@@ -342,6 +463,38 @@ let tests =
          "test_user_initial_balance" >:: test_user_initial_balance;
          "test_user_change_balance" >:: test_user_change_balance;
          "test_user_active_bets" >:: test_user_active_bets;
+         "test_average_nonempty" >:: test_average_nonempty;
+         "test_average_empty" >:: test_average_empty;
+         "test_average" >:: test_average;
+         "test_avg_for_against_nonempty" >:: test_avg_for_against_nonempty;
+         "test_avg_for_against_empty" >:: test_avg_for_against_empty;
+         "test_avg_for_against_one" >:: test_avg_for_against_one;
+         "test_poisson_pmf_valid" >:: test_poisson_pmf_valid;
+         "test_poisson_pmf_zero_lambda" >:: test_poisson_pmf_zero_lambda;
+         "test_poisson_pmf_zero_k" >:: test_poisson_pmf_zero_k;
+         "test_poisson_pmf_large_k" >:: test_poisson_pmf_large_k;
+         "test_poisson_pmf_large_lambda" >:: test_poisson_pmf_large_lambda;
+         "test_match_odds_simple" >:: test_match_odds_simple;
+         "test_match_odds_skewed" >:: test_match_odds_skewed;
+         "test_match_odds_equal" >:: test_match_odds_equal;
+         "test_match_odds_no_data" >:: test_match_odds_no_data;
+         "test_match_odds_partial_data" >:: test_match_odds_partial_data;
+         "test_match_odds_high_scoring" >:: test_match_odds_high_scoring;
+         "test_match_odds_low_scoring" >:: test_match_odds_low_scoring;
+         "test_poisson_pmf_zero_lambda_and_k"
+         >:: test_poisson_pmf_zero_lambda_and_k;
+         "test_poisson_pmf_large_lambda_and_k"
+         >:: test_poisson_pmf_large_lambda_and_k;
+         "test_match_odds_negative_results" >:: test_match_odds_negative_results;
+         "test_average_negative_numbers" >:: test_average_negative_numbers;
+         "test_avg_for_against_negative_numbers"
+         >:: test_avg_for_against_negative_numbers;
+         "test_poisson_pmf_fractional_lambda"
+         >:: test_poisson_pmf_fractional_lambda;
+         "test_match_odds_fractional_results"
+         >:: test_match_odds_fractional_results;
+         "test_match_odds_large_data" >:: test_match_odds_large_data;
+         "test_average_large_list" >:: test_average_large_list;
        ]
 
 let () = run_test_tt_main tests
