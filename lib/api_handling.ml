@@ -4,7 +4,7 @@ open Cohttp_lwt_unix
 open Yojson.Basic.Util
 open Unix
 
-let api_key = "cb5a2c14976a9dd0786cb9d59957702e"
+let api_key = "7e640def26ec497616618d5a9f9b99d7"
 
 (* Helper function to format Unix timestamp to YYYY-MM-DD *)
 let format_date timestamp =

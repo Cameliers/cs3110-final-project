@@ -352,6 +352,7 @@ let rec program_cycle user () =
 (* [startup] A helper function that is used in the main entry point of the
    program, meant to both check for completed bets from active bets before
    lauching program cycle. *)
+
 let startup user () =
   complete_bets user;
   program_cycle user ()
