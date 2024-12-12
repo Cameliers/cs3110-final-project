@@ -11,3 +11,6 @@ val get_upcoming_matches : unit -> (int * string * string) list
    match was cancelled. - "Unknown Status" if the match status is unclear. In
    case of errors, returns appropriate error messages as strings. *)
 val get_match_result : int -> string
+
+(** [format_date timestamp] converts a Unix timestamp to a formatted date string (YYYY-MM-DD) *)
+val format_date : float -> string

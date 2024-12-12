@@ -332,6 +332,36 @@ let test_poisson_pmf_zero_lambda _ =
 let test_poisson_pmf_zero_k _ =
   assert_equal 0.36787944117144233 (Final_project.Bet_odds.poisson_pmf 1.0 0)
 
+(* Define test cases *)
+let test_match_id _ =
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  assert_equal 1 (Final_project.Match.match_id match_)
+
+let test_a_side _ =
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  assert_equal "TeamA" (Final_project.Match.a_side match_)
+
+let test_b_side _ =
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  assert_equal "TeamB" (Final_project.Match.b_side match_)
+
+let test_match_odds _ =
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  assert_equal "2.5:1" (Final_project.Match.match_odds match_)
+
+let test_to_string _ =
+  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" "2.5:1" in
+  let expected = "1/TeamA/TeamB/(Odds:2.5:1)" in
+  assert_equal expected (Final_project.Match.to_string match_)
+
+let test_of_string _ =
+  let match_str = "1/TeamA/TeamB/(Odds:2.5:1)" in
+  let match_ = Final_project.Match.of_string match_str in
+  assert_equal 1 (Final_project.Match.match_id match_);
+  assert_equal "TeamA" (Final_project.Match.a_side match_);
+  assert_equal "TeamB" (Final_project.Match.b_side match_);
+  assert_equal "(Odds:2.5:1)" (Final_project.Match.match_odds match_)
+
 let test_match_odds_skewed _ =
   let a_results = [ (10.0, 0.0); (10.0, 0.0) ] in
   let b_results = [ (0.0, 10.0); (0.0, 10.0) ] in
@@ -365,6 +395,14 @@ let test_average_negative_numbers _ =
 let test_average_large_list _ =
   let lst = List.init 1000 (fun i -> float_of_int (i + 1)) in
   assert_equal 500.5 (Final_project.Bet_odds.average lst)
+
+(*API_HANDLING tests*)
+
+let test_format_date _ =
+  (* Set a fixed timestamp for consistent testing *)
+  let timestamp = 1609459200.0 (* This corresponds to 2021-01-01 *) in
+  let result = Final_project.Api_handling.format_date timestamp in
+  assert_equal "2021-01-01" result
 
 let tests =
   "test_user_module"
@@ -437,6 +475,12 @@ let tests =
          "test_avg_for_against_one" >:: test_avg_for_against_one;
          "test_poisson_pmf_zero_lambda" >:: test_poisson_pmf_zero_lambda;
          "test_poisson_pmf_zero_k" >:: test_poisson_pmf_zero_k;
+         "test_match_id" >:: test_match_id;
+          "test_a_side" >:: test_a_side;
+          "test_b_side" >:: test_b_side;
+          "test_match_odds" >:: test_match_odds;
+          "test_to_string" >:: test_to_string;
+          "test_of_string" >:: test_of_string;
          "test_match_odds_skewed" >:: test_match_odds_skewed;
          "test_match_odds_equal" >:: test_match_odds_equal;
          "test_match_odds_no_data" >:: test_match_odds_no_data;
@@ -448,6 +492,7 @@ let tests =
          "test_modify_bet_valid" >:: test_modify_bet_valid;
          "test_modify_bet_insufficient_balance"
          >:: test_modify_bet_insufficient_balance;
+         "test_format_date" >:: test_format_date;
        ]
 
 let () = run_test_tt_main tests
