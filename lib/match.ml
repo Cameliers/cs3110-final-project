@@ -13,7 +13,7 @@ let b_side x = x.b_side
 
 let odds_to_string = function
   | None -> "None"
-  | Some (x, y, z) -> Printf.sprintf "Some (%.2f, %.2f, %.2f)" x y z
+  | Some (x, y, z) -> Printf.sprintf "(%.2f, %.2f, %.2f)" x y z
 
 let calculate_odds id = get_match_winner_odds id
 let match_odds x = odds_to_string x.match_odds

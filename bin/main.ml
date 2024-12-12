@@ -138,22 +138,22 @@ let rec choose_bet_amount user () =
       print_newline ();
       choose_bet_amount user ()
 
-(* [matches_string] A helper val that displays the upcoming matches list into
-   string form.*)
-let matches_string =
-  get_upcoming_matches ()
-  |> List.mapi (fun i (id, a, b) ->
-         "("
-         ^ string_of_int (i + 1)
-         ^ ") " ^ a ^ " vs " ^ b ^ " id: " ^ string_of_int id)
-  |> String.concat "\n"
-
 (* [matches_list] A helper val that gets the matches from the API, and
    represents them in List form.*)
 let matches_list =
   List.map
     (fun ((id : int), a, b) -> make_match id a b)
     (get_upcoming_matches ())
+
+(* [matches_string] A helper val that displays the upcoming matches list into
+   string form.*)
+let matches_string =
+  matches_list
+  |> List.mapi (fun i m ->
+         "("
+         ^ string_of_int (i + 1)
+         ^ ") " ^ a_side m ^ " vs " ^ b_side m ^ " Odds: " ^ match_odds m)
+  |> String.concat "\n"
 
 (* [balance_history_to_string] A helper function to convert balance history into
    a nicely formatted string. *)
