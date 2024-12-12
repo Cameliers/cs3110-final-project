@@ -274,7 +274,9 @@ let test_bets_to_string_complex _ =
 let test_string_to_bets_malformed _ =
   let str = "[INVALID STRING]" in
   assert_raises (Failure "Invalid bet string format") (fun () ->
-      Final_project.Profile.string_to_bets str)
+      Final_project.Profile.string_to_bets str);
+  assert_raises (Failure("Invalid bet string format")) (fun () -> 
+    Final_project.Profile.string_to_bets "([vamo], 0.0)")
 
 let test_string_to_bets_partial _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
@@ -337,6 +339,35 @@ let test_match_id _ =
   let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal 1 (Final_project.Match.match_id match_)
 
+(* Test for odds_to_string function *)
+let test_odds_to_string _ =
+  let test_cases = [
+    (None, "None");
+    (Some (2.0, 3.0, 4.0), "(2.00, 3.00, 4.00)");
+    (Some (1.23, 4.56, 7.89), "(1.23, 4.56, 7.89)");
+    (Some (0.0, 0.0, 0.0), "(0.00, 0.00, 0.00)");
+    (Some (10.12345, 20.6789, 30.98765), "(10.12, 20.68, 30.99)")
+  ] in
+  List.iter (fun (input, expected) ->
+    let result = Final_project.Match.odds_to_string input in
+    assert_equal ~msg:("odds_to_string " ^ (match input with 
+      | None -> "None"
+      | Some (x, y, z) -> Printf.sprintf "(%.2f, %.2f, %.2f)" x y z
+    )) expected result
+  ) test_cases
+
+(* Test for match_odds function *)
+let test_match_odds _ =
+  (* Test 1: Match with no odds *)
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  assert_equal "None" (Final_project.Match.match_odds match1);
+
+  (* Test 2: Match with some odds set manually *)
+  let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
+  let match2 = Final_project.Match.set_match_odds match2 (Some (0.0, 0.0, 0.0)) in
+  assert_equal "(0.00, 0.00, 0.00)" (Final_project.Match.match_odds match2)
+
+
 let test_a_side _ =
   let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal "TeamA" (Final_project.Match.a_side match_)
@@ -355,18 +386,30 @@ let test_of_string _ =
   let match_ = Final_project.Match.of_string match_str in
   assert_equal 1 (Final_project.Match.match_id match_);
   assert_equal "TeamA" (Final_project.Match.a_side match_);
-  assert_equal "TeamB" (Final_project.Match.b_side match_)
+  assert_equal "TeamB" (Final_project.Match.b_side match_);
+  assert_raises 
+    (Failure("Error occured with making match: 1/TeamA due to exception: Failure(\"Invalid match string format\")"))
+    (fun () -> Final_project.Match.of_string "1/TeamA")
 
 let test_match_odds_skewed _ =
   let a_results = [ (10.0, 0.0); (10.0, 0.0) ] in
   let b_results = [ (0.0, 10.0); (0.0, 10.0) ] in
   assert_equal "100 to 1"
-    (Final_project.Bet_odds.match_odds a_results b_results)
+    (Final_project.Bet_odds.match_odds a_results b_results);
+
+  let a_results_2 = [(0., 3.); (0., 2.); (0., 1.)] (* Team A never scores *) in
+  let b_results_2 = [(3., 0.); (2., 0.); (1., 0.)] (* Team B always scores more *) in
+  let odds_2 = Final_project.Bet_odds.match_odds a_results_2 b_results_2 in
+  assert_equal odds_2 "1 to 100" ~msg:"Expected '1 to 100' when Team A never wins"
 
 let test_match_odds_equal _ =
   let a_results = [ (1.0, 1.0) ] in
   let b_results = [ (1.0, 1.0) ] in
-  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results)
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results);
+
+  let a_results_2 = [(0., 0.); (0., 0.)] in
+  let b_results_2 = [(0., 0.); (0., 0.)] in
+  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results_2 b_results_2)
 
 let test_match_odds_no_data _ =
   let a_results = [] in
@@ -541,6 +584,8 @@ let tests =
          "test_poisson_pmf_zero_lambda" >:: test_poisson_pmf_zero_lambda;
          "test_poisson_pmf_zero_k" >:: test_poisson_pmf_zero_k;
          "test_match_id" >:: test_match_id;
+         "test_odds_to_string" >:: test_odds_to_string;
+         "test_match_odds" >:: test_match_odds;
          "test_a_side" >:: test_a_side;
          "test_b_side" >:: test_b_side;
          "test_to_string" >:: test_to_string;

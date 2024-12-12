@@ -8,6 +8,12 @@ type t
 val match_id : t -> int
 (** [match_id x] returns the unique identifier of match [x]. *)
 
+val odds_to_string : (float * float * float) option -> string
+(**[odds_to_string] converts a tuple option representing the odds to a string.*)
+
+val set_match_odds : t -> (float * float * float) option -> t
+(**[set_match_odds] manually sets the match odds given [odds]*)
+
 val a_side : t -> string
 (** [a_side x] returns the a-side team of match [x]. *)
 

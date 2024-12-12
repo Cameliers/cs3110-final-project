@@ -18,6 +18,9 @@ let odds_to_string = function
 let calculate_odds id = get_match_winner_odds id
 let match_odds x = odds_to_string x.match_odds
 
+let set_match_odds t odds =
+  { t with match_odds = odds }
+
 let make_match match_id a b =
   {
     id = match_id;
