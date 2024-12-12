@@ -176,6 +176,28 @@ let test_change_balance_small_decrements _ =
   Final_project.User.change_balance user (-0.1);
   assert_equal 999.8 (Final_project.User.balance user)
 
+let test_modify_bet_valid _ =
+  let user = Final_project.User.make_user () in
+  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let bet = Final_project.Bet.make_bet game "TeamA" 100.0 in
+  Final_project.User.add_bet user game "TeamA" 100.0;
+  (* Add the initial bet *)
+  Final_project.User.modify_bet user bet 50.0;
+  (* Modify the bet *)
+  assert_equal 850.0 (Final_project.User.balance user);
+  let updated_bet = List.hd (Final_project.User.bets_active user) in
+  assert_equal 150.0 (Final_project.Bet.bet_amount updated_bet)
+
+let test_modify_bet_insufficient_balance _ =
+  let user = Final_project.User.make_user () in
+  let game = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
+  let bet = Final_project.Bet.make_bet game "TeamA" 100.0 in
+  Final_project.User.add_bet user game "TeamA" 100.0;
+  assert_raises Final_project.User.Insufficient_Balance (fun () ->
+      Final_project.User.modify_bet user bet 950.0);
+  assert_equal 900.0 (Final_project.User.balance user);
+  assert_equal 1 (List.length (Final_project.User.bets_active user))
+
 let test_bets_to_string_multiple _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" "2:1" in
   let match2 = Final_project.Match.make_match 2 "TeamC" "TeamD" "3:2" in
@@ -423,6 +445,9 @@ let tests =
          >:: test_poisson_pmf_zero_lambda_and_k;
          "test_average_negative_numbers" >:: test_average_negative_numbers;
          "test_average_large_list" >:: test_average_large_list;
+         "test_modify_bet_valid" >:: test_modify_bet_valid;
+         "test_modify_bet_insufficient_balance"
+         >:: test_modify_bet_insufficient_balance;
        ]
 
 let () = run_test_tt_main tests
