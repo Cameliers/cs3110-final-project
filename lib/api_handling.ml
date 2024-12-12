@@ -108,68 +108,106 @@ let get_match_result (fixture_id : int) : string =
           | _ -> "Unexpected error")
       | _ -> Lwt.return "Error fetching match result" )
 
-(* Fetches total goals scored and conceded for a team *)
-let get_team_goals (team_name : string) : (int * int) option =
-  let team_id =
-    let uri =
-      Uri.of_string
-        (Printf.sprintf "https://v3.football.api-sports.io/teams?search=%s"
-           (Uri.pct_encode team_name))
-    in
-    let headers =
-      Header.init () |> fun h ->
-      Header.add h "x-rapidapi-key" api_key |> fun h ->
-      Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
-    in
-    Lwt_main.run
-      ( Client.call ~headers `GET uri >>= fun (resp, body) ->
-        match resp.status with
-        | `OK -> (
-            body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
-            try
-              let json = Yojson.Basic.from_string body_str in
-              let team = json |> member "response" |> to_list |> List.hd in
-              Some (team |> member "team" |> member "id" |> to_int)
-            with Yojson.Json_error _ | Failure _ -> None)
-        | _ -> Lwt.return None )
+(* Fetches match winner odds for a given fixture ID *)
+let get_match_winner_odds (fixture_id : int) : (float * float * float) option =
+  let uri =
+    Uri.of_string
+      (Printf.sprintf "https://v3.football.api-sports.io/odds?fixture=%d"
+         fixture_id)
   in
-  match team_id with
-  | None -> None
-  | Some id ->
-      let uri =
-        Uri.of_string
-          (Printf.sprintf
-             "https://v3.football.api-sports.io/teams/statistics?team=%d&season=%d"
-             id 2024)
-      in
-      let headers =
-        Header.init () |> fun h ->
-        Header.add h "x-rapidapi-key" api_key |> fun h ->
-        Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
-      in
-      Lwt_main.run
-        ( Client.call ~headers `GET uri >>= fun (resp, body) ->
-          match resp.status with
-          | `OK -> (
-              body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
-              try
-                let json = Yojson.Basic.from_string body_str in
-                let goals_for =
-                  json |> member "response" |> member "goals" |> member "for"
-                  |> member "total" |> member "total" |> to_int
-                in
-                let goals_against =
-                  json |> member "response" |> member "goals"
-                  |> member "against" |> member "total" |> member "total"
-                  |> to_int
-                in
-                Some (goals_for, goals_against)
-              with Yojson.Json_error _ | Failure _ -> None)
-          | _ -> Lwt.return None )
+  let headers =
+    Header.init () |> fun h ->
+    Header.add h "x-rapidapi-key" api_key |> fun h ->
+    Header.add h "x-rapidapi-host" "v3.football.api-sports.io"
+  in
+  Lwt_main.run
+    ( Client.call ~headers `GET uri >>= fun (resp, body) ->
+      (* Debug: Print HTTP Status *)
+      Printf.printf "HTTP Status: %s\n"
+        (Cohttp.Code.string_of_status resp.status);
 
-let () =
-  (* Replace "Arsenal" with the team name you want to test *)
-  match get_team_goals "Arsenal" with
-  | Some (scored, conceded) ->
-      Printf.printf "Goals Scored: %d, Goals Conceded: %d\n" scored conceded
-  | None -> Printf.printf "Failed to fetch team goals.\n"
+      match resp.status with
+      | `OK -> (
+          body |> Cohttp_lwt.Body.to_string >|= fun body_str ->
+          (* Debug: Print Raw JSON Response *)
+          Printf.printf "Raw Odds Response: %s\n" body_str;
+
+          try
+            let json = Yojson.Basic.from_string body_str in
+            let odds_response = json |> member "response" |> to_list in
+
+            (* Debug: Check if response is empty *)
+            if odds_response = [] then (
+              Printf.printf "No odds available for fixture ID: %d\n" fixture_id;
+              None)
+            else
+              let bookmaker =
+                odds_response |> List.hd |> member "bookmakers" |> to_list
+                |> List.hd
+              in
+              let bets = bookmaker |> member "bets" |> to_list in
+
+              (* Debug: Print available bet names *)
+              Printf.printf "Available Bet Names: %s\n"
+                (String.concat ", "
+                   (List.map
+                      (fun bet -> bet |> member "name" |> to_string)
+                      bets));
+
+              match
+                List.find_opt
+                  (fun bet ->
+                    bet |> member "name" |> to_string = "Match Winner")
+                  bets
+              with
+              | None ->
+                  Printf.printf
+                    "Match Winner odds not available for fixture ID: %d\n"
+                    fixture_id;
+                  None
+              | Some match_winner_bet ->
+                  let values = match_winner_bet |> member "values" |> to_list in
+
+                  (* Debug: Print odds values *)
+                  Printf.printf "Odds Values: %s\n"
+                    (String.concat ", "
+                       (List.map
+                          (fun v ->
+                            Printf.sprintf "%s: %s"
+                              (v |> member "value" |> to_string)
+                              (v |> member "odd" |> to_string))
+                          values));
+
+                  let home_odd =
+                    List.find
+                      (fun v -> v |> member "value" |> to_string = "Home")
+                      values
+                    |> member "odd" |> to_float
+                  in
+                  let draw_odd =
+                    List.find
+                      (fun v -> v |> member "value" |> to_string = "Draw")
+                      values
+                    |> member "odd" |> to_float
+                  in
+                  let away_odd =
+                    List.find
+                      (fun v -> v |> member "value" |> to_string = "Away")
+                      values
+                    |> member "odd" |> to_float
+                  in
+                  Some (home_odd, draw_odd, away_odd)
+          with
+          | Yojson.Json_error _ ->
+              Printf.printf "Error parsing odds response for fixture ID: %d\n"
+                fixture_id;
+              None
+          | Failure _ ->
+              Printf.printf "Unexpected failure for fixture ID: %d\n" fixture_id;
+              None)
+      | _ ->
+          Printf.printf
+            "Failed to fetch odds for fixture ID: %d. HTTP Status: %s\n"
+            fixture_id
+            (Cohttp.Code.string_of_status resp.status);
+          Lwt.return None )
