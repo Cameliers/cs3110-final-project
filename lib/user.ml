@@ -79,6 +79,9 @@ let complete_bets t =
       let id = match_id bet_match in
       let result = get_match_result id in
       match result with
+      | "Error parsing match result" -> ()
+      | "Unexpected error" -> ()
+      | "Error fetching match result" -> ()
       | "Draw" ->
           t.bets_active <-
             List.filter
