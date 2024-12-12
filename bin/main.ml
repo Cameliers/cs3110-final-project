@@ -40,19 +40,123 @@ let display_menu () =
   print_endline "(6) Spin for BONUS cash!";
   print_endline "(7) Exit!"
 
+(* [display_betting_menu] A helper function meant to display a betting menu for
+   a user to choose the amount the want to spend on their bet. *)
+let display_betting_menu () =
+  print_newline ();
+  print_endline "(1) Place 5.00$ Bet.";
+  print_endline "(2) Place 10.00$ Bet.";
+  print_endline "(3) Place 15.00$ Bet.";
+  print_endline "(4) Place 20.00$ Bet.";
+  print_endline "(5) Up the stakes!";
+  print_endline "(6) Custom amount"
+
+(* [display_higher_stakes_menu] A helper function meant to display a higher
+   stakes betting menu for a user to choose the amount the want to spend on
+   their bet. *)
+let display_higher_stakes_menu () =
+  print_newline ();
+  print_endline "(1) Place 50.00$ Bet.";
+  print_endline "(2) Place 100.00$ Bet.";
+  print_endline "(3) Place 150.00$ Bet.";
+  print_endline "(4) Place 200.00$ Bet.";
+  print_endline "(5) Custom amount"
+
+(* Helper function to choose a bet amount using the new menus *)
+let rec choose_bet_amount user () =
+  (* Display the main betting menu *)
+  display_betting_menu ();
+  print_endline "\nEnter your choice (C to cancel): ";
+  match read_line () with
+  | "C" | "c" -> `Cancel
+  | "1" -> `Value 5.00
+  | "2" -> `Value 10.00
+  | "3" -> `Value 15.00
+  | "4" -> `Value 20.00
+  | "5" -> (
+      (* Higher stakes menu *)
+      display_higher_stakes_menu ();
+      print_endline "\nEnter your choice (C to cancel): ";
+      match read_line () with
+      | "C" | "c" -> `Cancel
+      | "1" -> `Value 50.00
+      | "2" -> `Value 100.00
+      | "3" -> `Value 150.00
+      | "4" -> `Value 200.00
+      | "5" -> (
+          (* Prompt custom amount *)
+          print_endline "\nEnter custom amount (C to cancel): ";
+          match read_line () with
+          | "C" | "c" -> `Cancel
+          | input -> (
+              try
+                let amount = float_of_string input in
+                if amount > 0. && amount <= balance user then `Value amount
+                else (
+                  print_newline ();
+                  Printf.printf
+                    "Your balance is %.2f. Please enter an amount within your \
+                     balance.\n"
+                    (balance user);
+                  print_newline ();
+                  choose_bet_amount user ())
+              with Failure _ ->
+                print_newline ();
+                display_title "Invalid input. Please enter a valid amount.";
+                print_newline ();
+                choose_bet_amount user ()))
+      | _ ->
+          print_newline ();
+          display_title "Invalid choice.";
+          print_newline ();
+          choose_bet_amount user ())
+  | "6" -> (
+      (* Prompt custom amount *)
+      print_endline "\nEnter custom amount (C to cancel): ";
+      match read_line () with
+      | "C" | "c" -> `Cancel
+      | input -> (
+          try
+            let amount = float_of_string input in
+            if amount > 0. && amount <= balance user then `Value amount
+            else (
+              print_newline ();
+              Printf.printf
+                "Your balance is %.2f. Please enter an amount within your \
+                 balance.\n"
+                (balance user);
+              print_newline ();
+              choose_bet_amount user ())
+          with Failure _ ->
+            print_newline ();
+            display_title "Invalid input. Please enter a valid amount.";
+            print_newline ();
+            choose_bet_amount user ()))
+  | _ ->
+      print_newline ();
+      display_title "Invalid choice.";
+      print_newline ();
+      choose_bet_amount user ()
+
+(* [matches_string] A helper val that displays the upcoming matches list into
+   string form.*)
 let matches_string =
   get_upcoming_matches ()
-  |> List.mapi (fun i (_, a, b) ->
-         "(" ^ string_of_int (i + 1) ^ ") " ^ a ^ " vs " ^ b)
+  |> List.mapi (fun i (id, a, b) ->
+         "("
+         ^ string_of_int (i + 1)
+         ^ ") " ^ a ^ " vs " ^ b ^ " id: " ^ string_of_int id)
   |> String.concat "\n"
 
+(* [matches_list] A helper val that gets the matches from the API, and
+   represents them in List form.*)
 let matches_list =
   List.map
-    (fun ((id : int), a, b) -> make_match id a b "null")
+    (fun ((id : int), a, b) -> make_match id a b)
     (get_upcoming_matches ())
 
-(* A helper function to convert balance history into a nicely formatted
-   string *)
+(* [balance_history_to_string] A helper function to convert balance history into
+   a nicely formatted string. *)
 let balance_history_to_string (balances, net) =
   let balances_str =
     match balances with
@@ -307,8 +411,8 @@ let rec program_cycle user () =
               print_newline ();
               program_cycle user ()
           | `Value team -> (
-              let amount = prompt_amount_with_cancel user () in
-              match amount with
+              (* Use the new choose_bet_amount function *)
+              match choose_bet_amount user () with
               | `Cancel ->
                   print_newline ();
                   display_title "Action canceled. Returning to the main menu.";
@@ -328,34 +432,6 @@ let rec program_cycle user () =
                        your balance.\n"
                       (balance user);
                     program_cycle user ()))))
-  | "6" ->
-      let bonus = spin_lottery () in
-      let new_balance = balance user +. bonus in
-      print_newline ();
-      display_title "Commence Spinning";
-      print_newline ();
-      for i = 1 to 3 do
-        let str = String.make i '.' in
-        Printf.printf "\rSpinning%s" str;
-        flush stdout;
-        Unix.sleep 1
-      done;
-
-      Printf.printf "\rBonus: $%.2f\n" bonus;
-      flush stdout;
-      Unix.sleep 1;
-
-      Printf.printf "\r\nNew Balance: $%.2f\n" new_balance;
-      flush stdout;
-      Unix.sleep 1;
-
-      print_newline ();
-      Printf.printf "\rLottery spin result: $%.2f\n\nYour new balance: $%.2f\n"
-        bonus new_balance;
-      print_newline ();
-
-      change_balance user bonus;
-      program_cycle user ()
   | "7" ->
       print_newline ();
       display_title "Goodbye & Good Luck!";
