@@ -32,14 +32,19 @@ let make_match match_id a b =
 let to_string match_ =
   string_of_int match_.id ^ "/" ^ match_.a_side ^ "/" ^ match_.b_side
 
-(* Function to convert a string like "TeamA vs TeamB (Odds: 2.5:1)" back into a
+(* Function to convert a string like "TeamA vs TeamB" back into a
    Match.t *)
 let of_string str =
   try
     (* Split on " vs " to separate the two teams *)
     let teams_and_odds = String.split_on_char '/' str in
     match teams_and_odds with
-    | [ id; a_side; b_side ] -> make_match (int_of_string id) a_side b_side
+    | [ id; a_side; b_side ] -> 
+      let id_int = 
+        try
+          int_of_string id
+        with Failure _ -> failwith "Invalid match ID" in
+      make_match id_int a_side b_side
     | _ -> failwith "Invalid match string format"
   with exn ->
     failwith

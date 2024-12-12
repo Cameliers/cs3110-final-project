@@ -305,7 +305,29 @@ let test_user_active_bets _ =
 
 let test_average_nonempty _ =
   let lst = [ 1.0; 2.0; 3.0; 4.0; 5.0 ] in
-  assert_equal 3.0 (Final_project.Bet_odds.average lst)
+  assert_equal 3.0 (Final_project.Bet_odds.average lst);
+
+  let lst2 = [0.0; 0.0; 0.0; 0.0] in
+  assert_equal 0.0 (Final_project.Bet_odds.average lst2);
+
+  (* Test with all positive numbers *)
+  let lst3 = [1.5; 2.5; 3.5; 4.5] in
+  assert_equal 3.0 (Final_project.Bet_odds.average lst3);
+
+  let lst5 = [2.0; 1.0; 3.0; 2.0] in
+  assert_equal 2.0 (Final_project.Bet_odds.average lst5);
+
+  (* Test with a list of size 1 *)
+  let lst6 = [10.0] in
+  assert_equal 10.0 (Final_project.Bet_odds.average lst6);
+
+  (* Test with very large numbers *)
+  let lst8 = [1000000.0; 2000000.0; 3000000.0] in
+  assert_equal 2000000.0 (Final_project.Bet_odds.average lst8);
+
+  (* Test with a list containing zero *)
+  let lst9 = [0.0; 1.0; 2.0; 3.0] in
+  assert_equal 1.5 (Final_project.Bet_odds.average lst9)
 
 let test_average_empty _ =
   assert_raises Final_project.Bet_odds.InvalidData (fun () ->
@@ -337,7 +359,39 @@ let test_poisson_pmf_zero_k _ =
 (* Define test cases *)
 let test_match_id _ =
   let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
-  assert_equal 1 (Final_project.Match.match_id match_)
+  assert_equal 1 (Final_project.Match.match_id match_);
+
+  (* Test with a match with a different ID *)
+  let match_2 = Final_project.Match.make_match 42 "TeamC" "TeamD" in
+  assert_equal 42 (Final_project.Match.match_id match_2);
+
+  (* Test with a match with a negative ID *)
+  let match_3 = Final_project.Match.make_match (-1) "TeamE" "TeamF" in
+  assert_equal (-1) (Final_project.Match.match_id match_3);
+
+  (* Test with a match with a zero ID *)
+  let match_4 = Final_project.Match.make_match 0 "TeamG" "TeamH" in
+  assert_equal 0 (Final_project.Match.match_id match_4);
+
+  (* Test with a match having a very large ID *)
+  let match_5 = Final_project.Match.make_match 9999999 "TeamI" "TeamJ" in
+  assert_equal 9999999 (Final_project.Match.match_id match_5);
+
+  (* Test with a match having a very small (negative) ID *)
+  let match_6 = Final_project.Match.make_match (-9999999) "TeamK" "TeamL" in
+  assert_equal (-9999999) (Final_project.Match.match_id match_6);
+
+  (* Test with a match having a non-standard ID of 1001 *)
+  let match_7 = Final_project.Match.make_match 1001 "TeamM" "TeamN" in
+  assert_equal 1001 (Final_project.Match.match_id match_7);
+
+  (* Test with a match having an unusually large ID (max int) *)
+  let match_8 = Final_project.Match.make_match (max_int) "TeamO" "TeamP" in
+  assert_equal max_int (Final_project.Match.match_id match_8);
+
+  (* Test with a match having an unusually small ID (min int) *)
+  let match_9 = Final_project.Match.make_match min_int "TeamQ" "TeamR" in
+  assert_equal min_int (Final_project.Match.match_id match_9)
 
 (* Test for odds_to_string function *)
 let test_odds_to_string _ =
@@ -346,7 +400,13 @@ let test_odds_to_string _ =
     (Some (2.0, 3.0, 4.0), "(2.00, 3.00, 4.00)");
     (Some (1.23, 4.56, 7.89), "(1.23, 4.56, 7.89)");
     (Some (0.0, 0.0, 0.0), "(0.00, 0.00, 0.00)");
-    (Some (10.12345, 20.6789, 30.98765), "(10.12, 20.68, 30.99)")
+    (Some (10.12345, 20.6789, 30.98765), "(10.12, 20.68, 30.99)");
+    (Some (0.001, 0.002, 0.003), "(0.00, 0.00, 0.00)");
+    (Some (1.0, 2.0, 3.0), "(1.00, 2.00, 3.00)");
+    (Some (5.12, 7.56, 9.99), "(5.12, 7.56, 9.99)");
+    (Some (0.1, 100.0, 1000.0), "(0.10, 100.00, 1000.00)");
+    (Some (0.03, 0.05, 0.07), "(0.03, 0.05, 0.07)");
+    (Some (1234.56, 7890.12, 3456.78), "(1234.56, 7890.12, 3456.78)")
   ] in
   List.iter (fun (input, expected) ->
     let result = Final_project.Match.odds_to_string input in
@@ -362,24 +422,198 @@ let test_match_odds _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   assert_equal "None" (Final_project.Match.match_odds match1);
 
-  (* Test 2: Match with some odds set manually *)
+  (* Test Type 2: Match with some odds set manually *)
   let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
   let match2 = Final_project.Match.set_match_odds match2 (Some (0.0, 0.0, 0.0)) in
-  assert_equal "(0.00, 0.00, 0.00)" (Final_project.Match.match_odds match2)
+  assert_equal "(0.00, 0.00, 0.00)" (Final_project.Match.match_odds match2);
+
+  let match3 = Final_project.Match.make_match 3 "TeamW" "TeamZ" in
+  let match3 = Final_project.Match.set_match_odds match3 (Some (1.0, 1.0, 1.0)) in
+  assert_equal "(1.00, 1.00, 1.00)" (Final_project.Match.match_odds match3);
+
+  let match4 = Final_project.Match.make_match 4 "TeamC" "TeamD" in
+  let match4 = Final_project.Match.set_match_odds match4 (Some (1.0, 2.0, 3.0)) in
+  assert_equal "(1.00, 2.00, 3.00)" (Final_project.Match.match_odds match4);
+
+  let match5 = Final_project.Match.make_match 5 "TeamC" "TeamD" in
+  let match5 = Final_project.Match.set_match_odds match5 (Some (0.1, 0.2, 0.3)) in
+  assert_equal "(0.10, 0.20, 0.30)" (Final_project.Match.match_odds match5);
+
+  let match6 = Final_project.Match.make_match 6 "TeamE" "TeamF" in
+  let match6 = Final_project.Match.set_match_odds match6 (Some (3.14, 2.71, 1.62)) in
+  assert_equal "(3.14, 2.71, 1.62)" (Final_project.Match.match_odds match6);
+
+  (* Test 7: Match with odds set to (100.0, 200.0, 300.0) *)
+  let match7 = Final_project.Match.make_match 7 "TeamG" "TeamH" in
+  let match7 = Final_project.Match.set_match_odds match7 (Some (100.0, 200.0, 300.0)) in
+  assert_equal "(100.00, 200.00, 300.00)" (Final_project.Match.match_odds match7);
+
+  let match8 = Final_project.Match.make_match 8 "TeamI" "TeamJ" in
+  let match8 = Final_project.Match.set_match_odds match8 (Some (10.0, 20.0, 30.0)) in
+  assert_equal "(10.00, 20.00, 30.00)" (Final_project.Match.match_odds match8);
+
+  let match9 = Final_project.Match.make_match 9 "TeamK" "TeamL" in
+  let match9 = Final_project.Match.set_match_odds match9 (Some (0.9, 1.8, 2.7)) in
+  assert_equal "(0.90, 1.80, 2.70)" (Final_project.Match.match_odds match9);
+
+  let match10 = Final_project.Match.make_match 10 "TeamM" "TeamN" in
+  let match10 = Final_project.Match.set_match_odds match10 (Some (5.0, 6.0, 7.0)) in
+  assert_equal "(5.00, 6.00, 7.00)" (Final_project.Match.match_odds match10);
+
+  let match11 = Final_project.Match.make_match 11 "TeamO" "TeamP" in
+  let match11 = Final_project.Match.set_match_odds match11 (Some (8.8, 7.7, 6.6)) in
+  assert_equal "(8.80, 7.70, 6.60)" (Final_project.Match.match_odds match11);
+
+  let match12 = Final_project.Match.make_match 12 "TeamQ" "TeamR" in
+  let match12 = Final_project.Match.set_match_odds match12 (Some (0.05, 0.25, 0.75)) in
+  assert_equal "(0.05, 0.25, 0.75)" (Final_project.Match.match_odds match12)
 
 
 let test_a_side _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
-  assert_equal "TeamA" (Final_project.Match.a_side match_)
+  (* Test 1: Match with "TeamA" vs "TeamB" *)
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  assert_equal "TeamA" (Final_project.Match.a_side match1);
+
+  (* Test 2: Match with "TeamX" vs "TeamY" *)
+  let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
+  assert_equal "TeamX" (Final_project.Match.a_side match2);
+
+  (* Test 3: Match with "TeamM" vs "TeamN" *)
+  let match3 = Final_project.Match.make_match 3 "TeamM" "TeamN" in
+  assert_equal "TeamM" (Final_project.Match.a_side match3);
+
+  (* Test 4: Match with "TeamW" vs "TeamZ" *)
+  let match4 = Final_project.Match.make_match 4 "TeamW" "TeamZ" in
+  assert_equal "TeamW" (Final_project.Match.a_side match4);
+
+  (* Test 5: Match with "Alpha" vs "Beta" *)
+  let match5 = Final_project.Match.make_match 5 "Alpha" "Beta" in
+  assert_equal "Alpha" (Final_project.Match.a_side match5);
+
+  (* Test 6: Match with "Red" vs "Blue" *)
+  let match6 = Final_project.Match.make_match 6 "Red" "Blue" in
+  assert_equal "Red" (Final_project.Match.a_side match6);
+
+  (* Test 7: Match with "Green" vs "Yellow" *)
+  let match7 = Final_project.Match.make_match 7 "Green" "Yellow" in
+  assert_equal "Green" (Final_project.Match.a_side match7);
+
+  (* Test 8: Match with "Team1" vs "Team2" *)
+  let match8 = Final_project.Match.make_match 8 "Team1" "Team2" in
+  assert_equal "Team1" (Final_project.Match.a_side match8);
+
+  (* Test 9: Match with "SquadA" vs "SquadB" *)
+  let match9 = Final_project.Match.make_match 9 "SquadA" "SquadB" in
+  assert_equal "SquadA" (Final_project.Match.a_side match9);
+
+  (* Test 10: Match with "TeamBlue" vs "TeamRed" *)
+  let match10 = Final_project.Match.make_match 10 "TeamBlue" "TeamRed" in
+  assert_equal "TeamBlue" (Final_project.Match.a_side match10);
+
+  (* Test 11: Match with "East" vs "West" *)
+  let match11 = Final_project.Match.make_match 11 "East" "West" in
+  assert_equal "East" (Final_project.Match.a_side match11)
 
 let test_b_side _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
-  assert_equal "TeamB" (Final_project.Match.b_side match_)
+  (* Test 1: Match with "TeamA" vs "TeamB" *)
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  assert_equal "TeamB" (Final_project.Match.b_side match1);
+
+  (* Test 2: Match with "TeamX" vs "TeamY" *)
+  let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
+  assert_equal "TeamY" (Final_project.Match.b_side match2);
+
+  (* Test 3: Match with "TeamM" vs "TeamN" *)
+  let match3 = Final_project.Match.make_match 3 "TeamM" "TeamN" in
+  assert_equal "TeamN" (Final_project.Match.b_side match3);
+
+  (* Test 4: Match with "TeamW" vs "TeamZ" *)
+  let match4 = Final_project.Match.make_match 4 "TeamW" "TeamZ" in
+  assert_equal "TeamZ" (Final_project.Match.b_side match4);
+
+  (* Test 5: Match with "Alpha" vs "Beta" *)
+  let match5 = Final_project.Match.make_match 5 "Alpha" "Beta" in
+  assert_equal "Beta" (Final_project.Match.b_side match5);
+
+  (* Test 6: Match with "Red" vs "Blue" *)
+  let match6 = Final_project.Match.make_match 6 "Red" "Blue" in
+  assert_equal "Blue" (Final_project.Match.b_side match6);
+
+  (* Test 7: Match with "Green" vs "Yellow" *)
+  let match7 = Final_project.Match.make_match 7 "Green" "Yellow" in
+  assert_equal "Yellow" (Final_project.Match.b_side match7);
+
+  (* Test 8: Match with "Team1" vs "Team2" *)
+  let match8 = Final_project.Match.make_match 8 "Team1" "Team2" in
+  assert_equal "Team2" (Final_project.Match.b_side match8);
+
+  (* Test 9: Match with "SquadA" vs "SquadB" *)
+  let match9 = Final_project.Match.make_match 9 "SquadA" "SquadB" in
+  assert_equal "SquadB" (Final_project.Match.b_side match9);
+
+  (* Test 10: Match with "TeamBlue" vs "TeamRed" *)
+  let match10 = Final_project.Match.make_match 10 "TeamBlue" "TeamRed" in
+  assert_equal "TeamRed" (Final_project.Match.b_side match10);
+
+  (* Test 11: Match with "East" vs "West" *)
+  let match11 = Final_project.Match.make_match 11 "East" "West" in
+  assert_equal "West" (Final_project.Match.b_side match11)
 
 let test_to_string _ =
-  let match_ = Final_project.Match.make_match 1 "TeamA" "TeamB" in
-  let expected = "1/TeamA/TeamB" in
-  assert_equal expected (Final_project.Match.to_string match_)
+  (* Test 1: Match with "TeamA" vs "TeamB" *)
+  let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
+  let expected1 = "1/TeamA/TeamB" in
+  assert_equal expected1 (Final_project.Match.to_string match1);
+
+  (* Test 2: Match with "TeamX" vs "TeamY" *)
+  let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
+  let expected2 = "2/TeamX/TeamY" in
+  assert_equal expected2 (Final_project.Match.to_string match2);
+
+  (* Test 3: Match with "TeamM" vs "TeamN" *)
+  let match3 = Final_project.Match.make_match 3 "TeamM" "TeamN" in
+  let expected3 = "3/TeamM/TeamN" in
+  assert_equal expected3 (Final_project.Match.to_string match3);
+
+  (* Test 4: Match with "TeamW" vs "TeamZ" *)
+  let match4 = Final_project.Match.make_match 4 "TeamW" "TeamZ" in
+  let expected4 = "4/TeamW/TeamZ" in
+  assert_equal expected4 (Final_project.Match.to_string match4);
+
+  (* Test 5: Match with "Alpha" vs "Beta" *)
+  let match5 = Final_project.Match.make_match 5 "Alpha" "Beta" in
+  let expected5 = "5/Alpha/Beta" in
+  assert_equal expected5 (Final_project.Match.to_string match5);
+
+  (* Test 6: Match with "Red" vs "Blue" *)
+  let match6 = Final_project.Match.make_match 6 "Red" "Blue" in
+  let expected6 = "6/Red/Blue" in
+  assert_equal expected6 (Final_project.Match.to_string match6);
+
+  (* Test 7: Match with "Green" vs "Yellow" *)
+  let match7 = Final_project.Match.make_match 7 "Green" "Yellow" in
+  let expected7 = "7/Green/Yellow" in
+  assert_equal expected7 (Final_project.Match.to_string match7);
+
+  (* Test 8: Match with "Team1" vs "Team2" *)
+  let match8 = Final_project.Match.make_match 8 "Team1" "Team2" in
+  let expected8 = "8/Team1/Team2" in
+  assert_equal expected8 (Final_project.Match.to_string match8);
+
+  (* Test 9: Match with "SquadA" vs "SquadB" *)
+  let match9 = Final_project.Match.make_match 9 "SquadA" "SquadB" in
+  let expected9 = "9/SquadA/SquadB" in
+  assert_equal expected9 (Final_project.Match.to_string match9);
+
+  (* Test 10: Match with "TeamBlue" vs "TeamRed" *)
+  let match10 = Final_project.Match.make_match 10 "TeamBlue" "TeamRed" in
+  let expected10 = "10/TeamBlue/TeamRed" in
+  assert_equal expected10 (Final_project.Match.to_string match10);
+
+  (* Test 11: Match with "East" vs "West" *)
+  let match11 = Final_project.Match.make_match 11 "East" "West" in
+  let expected11 = "11/East/West" in
+  assert_equal expected11 (Final_project.Match.to_string match11)
 
 let test_of_string _ =
   let match_str = "1/TeamA/TeamB" in
@@ -437,10 +671,10 @@ let test_average_large_list _ =
 (*API_HANDLING tests*)
 
 let test_format_date _ =
-  (* Set a fixed timestamp for consistent testing *)
-  let timestamp = 1609459200.0 (* This corresponds to 2021-01-01 *) in
-  let result = Final_project.Api_handling.format_date timestamp in
-  assert_equal "2021-01-01" result
+  (* Test 1: Timestamp for 2021-01-01 *)
+  let timestamp1 = 1609459200.0 in (* This corresponds to 2021-01-01 *)
+  let result1 = Final_project.Api_handling.format_date timestamp1 in
+  assert_equal "2021-01-01" result1
 
 (* Mock HTTP GET function *)
 let mock_http_get uri _headers =
