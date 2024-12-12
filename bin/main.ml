@@ -349,9 +349,89 @@ let rec program_cycle user () =
       print_newline ();
       program_cycle user ()
 
-(* [startup] A helper function that is used in the main entry point of the
-   program, meant to both check for completed bets from active bets before
-   lauching program cycle. *)
+let pause_and_continue () =
+  print_endline "\nPress ENTER to continue...";
+  let rec wait_for_enter () =
+    match read_line () with
+    | "" -> () (* Empty string means Enter key was pressed *)
+    | _ ->
+        print_endline "Please press ENTER to continue...";
+        wait_for_enter ()
+  in
+  wait_for_enter ()
+
+let display_tutorial () =
+  (* Clear screen and display welcome *)
+  print_segmentation "*" 30;
+  print_endline "* WELCOME TO CAMELIERS SPORTS BETTING CENTER *";
+  print_segmentation "*" 30;
+  print_newline ();
+
+  (* Pause function to wait for user to read *)
+
+  (* Tutorial sections *)
+  print_endline "Tutorial: Getting Started with Cameliers Sports Betting";
+  pause_and_continue ();
+
+  (* App Overview *)
+  display_title "App Overview";
+  print_endline
+    "Cameliers Sports Betting is a soccer match betting application where you \
+     can:";
+  print_endline "- View upcoming soccer matches";
+  print_endline "- Place bets on match outcomes";
+  print_endline "- Manage your active and completed bets";
+  print_endline "- Spin for bonus cash";
+  pause_and_continue ();
+
+  (* Initial Balance *)
+  display_title "Starting Balance";
+  print_endline
+    "When you start, you'll receive an initial balance of $1,000.00.";
+  print_endline "Use this balance wisely to place bets on soccer matches!";
+  pause_and_continue ();
+
+  (* How to Place a Bet *)
+  display_title "How to Place a Bet";
+  print_endline "To place a bet:";
+  print_endline
+    "1. Select 'Show Upcoming Matches' to see available soccer matches";
+  print_endline "2. Choose a match by its number";
+  print_endline "3. Select which team you want to bet on";
+  print_endline "4. Enter the amount you want to bet";
+  print_endline "Note: You can only bet an amount within your current balance";
+  pause_and_continue ();
+
+  (* Managing Bets *)
+  display_title "Managing Your Bets";
+  print_endline "In the 'Active bets menu', you can:";
+  print_endline "- Cancel an active bet before the match starts";
+  print_endline "- Increase the amount of an existing bet";
+  print_endline "- View your bet history";
+  pause_and_continue ();
+
+  (* Lottery Bonus *)
+  display_title "Bonus Cash Spinner";
+  print_endline "Feeling lucky? Use the 'Spin for BONUS cash!' option.";
+  print_endline
+    "This feature lets you potentially win extra money to add to your balance.";
+  pause_and_continue ();
+
+  (* Betting Tips *)
+  display_title "Betting Tips";
+  print_endline "- Only bet what you can afford to lose";
+  print_endline "- Check match details carefully before placing a bet";
+  print_endline "- Keep track of your bet history";
+  print_endline "- Remember, betting should be fun, not a financial strategy";
+  pause_and_continue ();
+
+  (* Final Welcome *)
+  print_segmentation "*" 30;
+  print_endline "* Ready to start your betting adventure? *";
+  print_endline "* Let's create your profile! *";
+  print_segmentation "*" 30;
+  print_newline ()
+
 let startup user () =
   complete_bets user;
   program_cycle user ()
@@ -361,6 +441,8 @@ let () =
   print_segmentation "*" 30;
   print_endline "* Welcome to Cameliers Sports Betting Center *";
   print_segmentation "*" 30;
+  let filename = "./data/user_profile.txt" in
+  if not (Sys.file_exists filename) then display_tutorial ();
   let user =
     let filename = "./data/user_profile.txt" in
     if Sys.file_exists filename then
