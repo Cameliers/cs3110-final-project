@@ -28,7 +28,6 @@ let make_match match_id a b =
 
 let to_string match_ =
   string_of_int match_.id ^ "/" ^ match_.a_side ^ "/" ^ match_.b_side
-  ^ "/(Odds:" ^ match_odds match_ ^ ")"
 
 (* Function to convert a string like "TeamA vs TeamB (Odds: 2.5:1)" back into a
    Match.t *)
