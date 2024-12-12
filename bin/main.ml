@@ -32,7 +32,7 @@ let display_title title =
 (* [display_menu] a helper function that prints a series of menu options to pick
    from in the program loop. *)
 let display_menu () =
-  print_endline "(1) Show Balance";
+  print_endline "(1) Show Current Balance & Balance History";
   print_endline "(2) Show Upcoming Matches";
   print_endline "(3) Enter Active bets menu";
   print_endline "(4) Show Completed Bets History";
@@ -50,6 +50,25 @@ let matches_list =
   List.map
     (fun ((id : int), a, b) -> make_match id a b "null")
     (get_upcoming_matches ())
+
+(* A helper function to convert balance history into a nicely formatted
+   string *)
+let balance_history_to_string (balances, net) =
+  let balances_str =
+    match balances with
+    | [] -> "No historical balances recorded."
+    | _ ->
+        let balances_list_str =
+          balances |> List.map (fun b -> Printf.sprintf "$%.2f" b)
+        in
+        "Balances Over Time: " ^ String.concat " -> " balances_list_str
+  in
+  let net_str =
+    if net > 0. then Printf.sprintf "Net Gain: +$%.2f" net
+    else if net < 0. then Printf.sprintf "Net Loss: -$%.2f" (abs_float net)
+    else "No net gain or loss."
+  in
+  balances_str ^ "\n" ^ net_str
 
 (* Prompt the user for a number with a cancel option *)
 let rec prompt_number_with_cancel () =
@@ -145,7 +164,8 @@ let rec prompt_additional_amount_with_cancel user () =
         print_newline ();
         prompt_additional_amount_with_cancel user ())
 
-(* Function to handle the active bets menu *)
+(* [active_bets_menu] A helper function that displays the 'active bets' menu.
+   [user] the user data. [active_bet_list] list of all ongoing/active bets. *)
 let rec active_bets_menu user active_bet_list =
   (* Display active bets *)
   let active_bet_string_list =
@@ -226,6 +246,13 @@ let rec program_cycle user () =
   match ask_user "\nEnter Number: " with
   | "1" ->
       print_newline ();
+      (* Retrieve the balance history and print it *)
+      let bh = balance_history user in
+      display_title "Current Balance History:";
+      print_newline ();
+      print_endline (balance_history_to_string bh);
+      print_newline ();
+      (* Print the current balance as well *)
       display_title ("Current Balance: " ^ string_of_float (balance user) ^ " $");
       print_newline ();
       program_cycle user ()
@@ -261,11 +288,11 @@ let rec program_cycle user () =
         else new_string
       in
       print_newline ();
-      print_endline ("Completed Bet History:\n" ^ final_string);
+      print_endline ("Completed Bet History:\n\n" ^ final_string);
       print_newline ();
       program_cycle user ()
   | "5" -> (
-      print_endline "Choose a match from the matches.";
+      print_endline "\nChoose a match from the matches.";
       match prompt_number_with_cancel () with
       | `Cancel ->
           print_newline ();
@@ -304,36 +331,29 @@ let rec program_cycle user () =
   | "6" ->
       let bonus = spin_lottery () in
       let new_balance = balance user +. bonus in
-
-      (* Print the spinner and bonus value dynamically *)
+      print_newline ();
+      display_title "Commence Spinning";
+      print_newline ();
       for i = 1 to 3 do
         let str = String.make i '.' in
         Printf.printf "\rSpinning%s" str;
-        (* Print spinner *)
         flush stdout;
-        (* Flush to force immediate printing *)
         Unix.sleep 1
-        (* Sleep for 1 second *)
       done;
-      (* After each animation frame, print the bonus and new balance *)
-      Printf.printf "\rBonus: $%.2f" bonus;
+
+      Printf.printf "\rBonus: $%.2f\n" bonus;
       flush stdout;
-      (* Flush to force immediate printing *)
       Unix.sleep 1;
 
-      (* Sleep for 1 second *)
-      Printf.printf "\rNew Balance: $%.2f" new_balance;
+      Printf.printf "\r\nNew Balance: $%.2f\n" new_balance;
       flush stdout;
-      (* Flush to force immediate printing *)
       Unix.sleep 1;
 
-      (* Sleep for 1 second *)
-
-      (* Print the final result after the spinner loop ends *)
-      Printf.printf "\rLottery spin result: $%.2f\nYour new balance: $%.2f\n"
+      print_newline ();
+      Printf.printf "\rLottery spin result: $%.2f\n\nYour new balance: $%.2f\n"
         bonus new_balance;
+      print_newline ();
 
-      (* Update the balance and continue the program cycle *)
       change_balance user bonus;
       program_cycle user ()
   | "7" ->
@@ -349,9 +369,8 @@ let rec program_cycle user () =
       print_newline ();
       program_cycle user ()
 
-(* [startup] A helper function that is used in the main entry point of the
-   program, meant to both check for completed bets from active bets before
-   lauching program cycle. *)
+(* [startup] A helper function that completes any bets that should be completed
+   before launching the program cycle. *)
 let startup user () =
   complete_bets user;
   program_cycle user ()
