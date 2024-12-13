@@ -471,13 +471,13 @@ let pause_and_continue () =
 
 let display_tutorial () =
   (* Tutorial sections *)
-  print_endline "Tutorial: Getting Started with Cameliers Sports Betting";
+  print_endline "Tutorial: Getting Started with Sands of Chance";
   pause_and_continue ();
 
   (* App Overview *)
   display_title "App Overview";
   print_endline
-    "Cameliers Sports Betting is a soccer match betting application where you \
+    "Sands of Chance is a soccer match betting application where you \
      can:";
   print_endline "- View upcoming soccer matches";
   print_endline "- Place bets on match outcomes";
@@ -540,7 +540,7 @@ let startup user () =
 (* Main entry *)
 let () =
   print_segmentation "*" 30;
-  print_endline "* Welcome to Cameliers Sports Betting Center *";
+  print_endline "* Welcome to Sands of Chance *";
   print_segmentation "*" 30;
   let filename = "./data/user_profile.txt" in
   if not (Sys.file_exists filename) then display_tutorial ();
