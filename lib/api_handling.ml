@@ -4,7 +4,7 @@ open Cohttp_lwt_unix
 open Yojson.Basic.Util
 open Unix
 
-let api_key = "9d7dec23de6b00e08137a4b845ef55d6"
+let api_key = "120de2f2f904e24bb531a8199f5faa25"
 
 (* Abstracted HTTP GET function *)
 let http_get uri headers = Client.call ~headers `GET uri
