@@ -2,7 +2,7 @@
    ] *)
 let bets_to_string (bets : Bet.t list) : string =
   let bet_strings = List.map Bet.to_string bets in
-  "[" ^ String.concat "; " bet_strings ^ "]" (* Adding the square brackets *)
+  "[" ^ String.concat ";" bet_strings ^ "]" (* Adding the square brackets *)
 
 (* Helper to convert a string in the format: [ Bet1; Bet2; ... ] back to a list
    of bets *)
