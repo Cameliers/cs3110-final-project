@@ -76,6 +76,7 @@ let complete_bets t =
   List.iter
     (fun bet ->
       let bet_match = bet_game bet in
+      print_endline (string_of_int (match_id bet_match));
       let id = match_id bet_match in
       let result = get_match_result id in
       match result with
