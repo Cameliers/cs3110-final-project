@@ -8,11 +8,17 @@ Authors:
 - Salem Alshamsi, sa948
 
 
-Welcome to **Sands of Chance**!
+## Welcome to **Sands of Chance**!
 
 This is the home of all OCaml sports betting fans. You can use this app to view upcoming soccer matches, place bets, and track your betting prowess over time!
 
-Run the following commands:
+## Getting Started
+
+To install OCaml, follow the instructions here: https://www.cs.cornell.edu/courses/cs3110/2017fa/install.html
+
+Navigate to the directory for the program using `cd`.
+
+Run the following commands to install the necessary packages: 
 
 ```
 opam install cohttp-lwt-unix yojson lwt

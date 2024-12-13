@@ -418,6 +418,7 @@ let rec program_cycle user () =
                       (balance user);
                     program_cycle user ()))))
   | "6" ->
+    if (balance user) > 20. then
       let bonus = spin_lottery () in
       let new_balance = balance user +. bonus in
       print_newline ();
@@ -445,6 +446,10 @@ let rec program_cycle user () =
 
       change_balance user bonus;
       program_cycle user ()
+    else
+      print_endline "Your balance is too low to spin!";
+      program_cycle user ()
+
   | "7" ->
       print_newline ();
       display_title "Goodbye & Good Luck!";
