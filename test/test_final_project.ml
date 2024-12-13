@@ -388,7 +388,7 @@ let test_bets_to_string_multiple _ =
   assert_equal
     ("["
     ^ Final_project.Bet.to_string bet1
-    ^ "; "
+    ^ ";"
     ^ Final_project.Bet.to_string bet2
     ^ "]")
     result
@@ -444,9 +444,9 @@ let test_bets_to_string_complex _ =
   assert_equal
     ("["
     ^ Final_project.Bet.to_string bet1
-    ^ "; "
+    ^ ";"
     ^ Final_project.Bet.to_string bet2
-    ^ "; "
+    ^ ";"
     ^ Final_project.Bet.to_string bet3
     ^ "]")
     result
