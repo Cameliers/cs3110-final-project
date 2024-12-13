@@ -458,7 +458,6 @@ let test_string_to_bets_malformed _ =
   assert_raises (Failure "Invalid bet string format") (fun () ->
       Final_project.Profile.string_to_bets "([vamo], 0.0)")
 
-
 let test_string_to_bets_partial _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
   let bet1 = Final_project.Bet.make_bet match1 "TeamA" 100.0 in
@@ -489,30 +488,24 @@ let test_average_nonempty _ =
   assert_equal 3.0 (Final_project.Bet_odds.average lst);
 
   let lst2 = [ 0.0; 0.0; 0.0; 0.0 ] in
-  let lst2 = [ 0.0; 0.0; 0.0; 0.0 ] in
   assert_equal 0.0 (Final_project.Bet_odds.average lst2);
 
   (* Test with all positive numbers *)
   let lst3 = [ 1.5; 2.5; 3.5; 4.5 ] in
-  let lst3 = [ 1.5; 2.5; 3.5; 4.5 ] in
   assert_equal 3.0 (Final_project.Bet_odds.average lst3);
 
-  let lst5 = [ 2.0; 1.0; 3.0; 2.0 ] in
   let lst5 = [ 2.0; 1.0; 3.0; 2.0 ] in
   assert_equal 2.0 (Final_project.Bet_odds.average lst5);
 
   (* Test with a list of size 1 *)
   let lst6 = [ 10.0 ] in
-  let lst6 = [ 10.0 ] in
   assert_equal 10.0 (Final_project.Bet_odds.average lst6);
 
   (* Test with very large numbers *)
   let lst8 = [ 1000000.0; 2000000.0; 3000000.0 ] in
-  let lst8 = [ 1000000.0; 2000000.0; 3000000.0 ] in
   assert_equal 2000000.0 (Final_project.Bet_odds.average lst8);
 
   (* Test with a list containing zero *)
-  let lst9 = [ 0.0; 1.0; 2.0; 3.0 ] in
   let lst9 = [ 0.0; 1.0; 2.0; 3.0 ] in
   assert_equal 1.5 (Final_project.Bet_odds.average lst9)
 
@@ -573,7 +566,6 @@ let test_match_id _ =
   assert_equal 1001 (Final_project.Match.match_id match_7);
 
   (* Test with a match having an unusually large ID (max int) *)
-  let match_8 = Final_project.Match.make_match max_int "TeamO" "TeamP" in
   let match_8 = Final_project.Match.make_match max_int "TeamO" "TeamP" in
   assert_equal max_int (Final_project.Match.match_id match_8);
 
@@ -841,7 +833,7 @@ let test_of_string _ =
     (Failure
        "Error occured with making match: 1/TeamA due to exception: \
         Failure(\"Invalid match string format\")") (fun () ->
-      Final_project.Match.of_string "1/TeamA")
+      Final_project.Match.of_string "1/TeamA");
   assert_raises
     (Failure
        "Error occured with making match: 1/TeamA due to exception: \
@@ -862,17 +854,9 @@ let test_match_odds_skewed _ =
     [ (3., 0.); (2., 0.); (1., 0.) ]
     (* Team B always scores more *)
   in
-  let a_results_2 =
-    [ (0., 3.); (0., 2.); (0., 1.) ]
-    (* Team A never scores *)
-  in
-  let b_results_2 =
-    [ (3., 0.); (2., 0.); (1., 0.) ]
-    (* Team B always scores more *)
-  in
   let odds_2 = Final_project.Bet_odds.match_odds a_results_2 b_results_2 in
   assert_equal odds_2 "1 to 100"
-    ~msg:"Expected '1 to 100' when Team A never wins"
+    ~msg:"Expected '1 to 100' when Team A never wins";
   assert_equal odds_2 "1 to 100"
     ~msg:"Expected '1 to 100' when Team A never wins"
 
@@ -884,7 +868,7 @@ let test_match_odds_equal _ =
   let a_results_2 = [ (0., 0.); (0., 0.) ] in
   let b_results_2 = [ (0., 0.); (0., 0.) ] in
   assert_equal "1 to 1"
-    (Final_project.Bet_odds.match_odds a_results_2 b_results_2)
+    (Final_project.Bet_odds.match_odds a_results_2 b_results_2);
   let a_results_2 = [ (0., 0.); (0., 0.) ] in
   let b_results_2 = [ (0., 0.); (0., 0.) ] in
   assert_equal "1 to 1"
@@ -916,8 +900,6 @@ let test_average_large_list _ =
 (*API_HANDLING tests*)
 
 let test_format_date _ =
-  (* Test 1: Timestamp for 2021-01-01 *)
-  let timestamp1 = 1609459200.0 in
   (* This corresponds to 2021-01-01 *)
   let timestamp1 = 1609459200.0 in
   (* This corresponds to 2021-01-01 *)
