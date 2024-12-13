@@ -470,14 +470,6 @@ let pause_and_continue () =
   wait_for_enter ()
 
 let display_tutorial () =
-  (* Clear screen and display welcome *)
-  print_segmentation "*" 30;
-  print_endline "* WELCOME TO CAMELIERS SPORTS BETTING CENTER *";
-  print_segmentation "*" 30;
-  print_newline ();
-
-  (* Pause function to wait for user to read *)
-
   (* Tutorial sections *)
   print_endline "Tutorial: Getting Started with Cameliers Sports Betting";
   pause_and_continue ();

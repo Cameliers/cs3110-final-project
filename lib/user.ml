@@ -72,12 +72,16 @@ let add_bet t game team amount =
     change_balance t (-1. *. amount))
   else raise Insufficient_Balance
 
+let calculate_win (odds : float * float) (bet : Bet.t) =
+  if bet_team bet = a_side (bet_game bet) then fst odds *. bet_amount bet
+  else snd odds *. bet_amount bet
+
 let complete_bets t =
   List.iter
     (fun bet ->
       let bet_match = bet_game bet in
-      print_endline (string_of_int (match_id bet_match));
       let id = match_id bet_match in
+      let odds = match_odds_tuple bet_match in
       let result = get_match_result id in
       match result with
       | "Draw" ->
@@ -102,7 +106,7 @@ let complete_bets t =
           t.bets_history <- bet :: t.bets_history
       | "Unknown Status" -> ()
       | team ->
-          if team = bet_team bet then change_balance t (2. *. bet_amount bet)
+          if team = bet_team bet then change_balance t (calculate_win odds bet)
           else ();
           t.bets_active <-
             List.filter

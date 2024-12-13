@@ -56,6 +56,13 @@ val add_bet : t -> Match.t -> string -> float -> unit
     the active bets. Raises [Insufficient_Balance] if insufficient funds are
     available. *)
 
+val calculate_win : float * float -> Bet.t -> float
+(** [calculate_win result bet] calculate the amount of money a winning bet makes
+    given a tuple of floats. If the bet was placed on the A team then the amount
+    returned is the first tuple element multiplied by the bet amount, if the bet
+    was placed on the B team then the amount returned is the second tuple
+    element multiplied by the bet amount *)
+
 val complete_bets : t -> unit
 (** [complete_bets user] checks all active bets of [user]. For each bet on a
     match that has a known result:

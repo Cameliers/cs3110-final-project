@@ -23,6 +23,14 @@ val b_side : t -> string
 val match_odds : t -> string
 (** [match_odds x] returns the odds associated with match [x], as a string. *)
 
+val match_odds_tuple_helper : (float * float * float) option -> float * float
+(** [match_odds odds] is a helper function that converts a three way odds triple
+    option [odds] into a tuple of just a_side and b_side odds *)
+
+val match_odds_tuple : t -> float * float
+(** [match_odds_tuple match] is a tuple representation of the odds for match
+    [match] showing the a_side and b_side odds *)
+
 val make_match : int -> string -> string -> t
 (** [make_match id a b odds] creates a new match with identifier [id], a-side
     team [a], b-side team [b]*)
