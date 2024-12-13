@@ -176,6 +176,186 @@ let test_change_balance_small_decrements _ =
   Final_project.User.change_balance user (-0.1);
   assert_equal 999.8 (Final_project.User.balance user)
 
+let test_change_balance_fractional_precision _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.000001;
+  assert_bool "Balance handles fractional precision"
+    (abs_float (Final_project.User.balance user -. 1000.000001) < 1e-9)
+
+let test_change_balance_round_trip _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 500.0;
+  Final_project.User.change_balance user (-500.0);
+  Final_project.User.change_balance user (-500.0);
+  Final_project.User.change_balance user 500.0;
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_zero_check_after_multiple_ops _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 200.0;
+  Final_project.User.change_balance user (-200.0);
+  Final_project.User.change_balance user 300.0;
+  Final_project.User.change_balance user (-300.0);
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_multiple_fractions _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.333333;
+  Final_project.User.change_balance user (-0.333333);
+  Final_project.User.change_balance user 0.111111;
+  Final_project.User.change_balance user (-0.111111);
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_substantial_overdraw _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-1e9);
+  assert_equal (-999_999_000.0) (Final_project.User.balance user)
+
+let test_change_balance_positive_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 750.0;
+  assert_equal 1750.0 (Final_project.User.balance user)
+
+let test_change_balance_positive_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 300.0;
+  assert_bool "Balance is 1300.0 after addition"
+    (Final_project.User.balance user = 1300.0)
+
+let test_change_balance_negative_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-300.0);
+  assert_equal 700.0 (Final_project.User.balance user)
+
+let test_change_balance_negative_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-100.0);
+  assert_bool "Balance is 900.0 after deduction"
+    (Final_project.User.balance user = 900.0)
+
+let test_change_balance_zero_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.0;
+  Final_project.User.change_balance user 0.0;
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_zero_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.0;
+  assert_bool "Balance remains the same with zero change"
+    (Final_project.User.balance user = 1000.0)
+
+let test_change_balance_multiple_operations_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 200.0;
+  Final_project.User.change_balance user (-150.0);
+  assert_equal 1050.0 (Final_project.User.balance user);
+  Final_project.User.change_balance user 500.0;
+  assert_equal 1550.0 (Final_project.User.balance user)
+
+let test_change_balance_multiple_operations_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 50.0;
+  Final_project.User.change_balance user 50.0;
+  assert_equal 1100.0 (Final_project.User.balance user)
+
+let test_change_balance_large_positive_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 500000.0;
+  assert_equal 501000.0 (Final_project.User.balance user)
+
+let test_change_balance_large_positive_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 1e5;
+  assert_equal 101000.0 (Final_project.User.balance user)
+
+let test_change_balance_large_negative_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-999500.0);
+  assert_equal (-998500.0) (Final_project.User.balance user)
+
+let test_change_balance_large_negative_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-500000.0);
+  assert_equal (-499000.0) (Final_project.User.balance user)
+
+let test_change_balance_exact_balance_deduction_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-1000.0);
+  Final_project.User.change_balance user 1000.0;
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_exact_balance_deduction_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-1000.0);
+  assert_bool "Balance is exactly zero after full deduction"
+    (Final_project.User.balance user = 0.0)
+
+let test_change_balance_small_increments_variant1 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.01;
+  Final_project.User.change_balance user 0.02;
+  assert_equal 1000.03 (Final_project.User.balance user)
+
+let test_change_balance_small_increments_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.001;
+  Final_project.User.change_balance user 0.001;
+  assert_equal 1000.002 (Final_project.User.balance user)
+
+let test_change_balance_small_decrements_variant2 _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-0.01);
+  Final_project.User.change_balance user (-0.01);
+  assert_equal 999.98 (Final_project.User.balance user)
+
+let test_change_balance_negative_overdraw _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-2000.0);
+  assert_equal (-1000.0) (Final_project.User.balance user)
+
+let test_change_balance_small_fractional_increments _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.01;
+  Final_project.User.change_balance user 0.01;
+  assert_equal 1000.02 (Final_project.User.balance user)
+
+let test_change_balance_small_fractional_decrements _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user (-0.01);
+  Final_project.User.change_balance user (-0.01);
+  assert_equal 999.98 (Final_project.User.balance user)
+
+let test_change_balance_large_sequence _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 1e6;
+  Final_project.User.change_balance user (-500000.0);
+  Final_project.User.change_balance user 500000.0;
+  Final_project.User.change_balance user (-1e6);
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_multiple_small_increments_and_decrements _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.1;
+  Final_project.User.change_balance user (-0.1);
+  Final_project.User.change_balance user 0.2;
+  Final_project.User.change_balance user (-0.2);
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_no_change_after_zero_operations _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.0;
+  Final_project.User.change_balance user 0.0;
+  Final_project.User.change_balance user 0.0;
+  assert_equal 1000.0 (Final_project.User.balance user)
+
+let test_change_balance_rounding _ =
+  let user = Final_project.User.make_user () in
+  Final_project.User.change_balance user 0.333333333;
+  Final_project.User.change_balance user (-0.333333333);
+  assert_bool "Balance remains consistent after rounding"
+    (abs_float (Final_project.User.balance user -. 1000.0) < 1e-9)
+
 let test_modify_bet_valid _ =
   let user = Final_project.User.make_user () in
   let game = Final_project.Match.make_match 1 "TeamA" "TeamB" in
@@ -275,8 +455,8 @@ let test_string_to_bets_malformed _ =
   let str = "[INVALID STRING]" in
   assert_raises (Failure "Invalid bet string format") (fun () ->
       Final_project.Profile.string_to_bets str);
-  assert_raises (Failure("Invalid bet string format")) (fun () -> 
-    Final_project.Profile.string_to_bets "([vamo], 0.0)")
+  assert_raises (Failure "Invalid bet string format") (fun () ->
+      Final_project.Profile.string_to_bets "([vamo], 0.0)")
 
 let test_string_to_bets_partial _ =
   let match1 = Final_project.Match.make_match 1 "TeamA" "TeamB" in
@@ -307,26 +487,26 @@ let test_average_nonempty _ =
   let lst = [ 1.0; 2.0; 3.0; 4.0; 5.0 ] in
   assert_equal 3.0 (Final_project.Bet_odds.average lst);
 
-  let lst2 = [0.0; 0.0; 0.0; 0.0] in
+  let lst2 = [ 0.0; 0.0; 0.0; 0.0 ] in
   assert_equal 0.0 (Final_project.Bet_odds.average lst2);
 
   (* Test with all positive numbers *)
-  let lst3 = [1.5; 2.5; 3.5; 4.5] in
+  let lst3 = [ 1.5; 2.5; 3.5; 4.5 ] in
   assert_equal 3.0 (Final_project.Bet_odds.average lst3);
 
-  let lst5 = [2.0; 1.0; 3.0; 2.0] in
+  let lst5 = [ 2.0; 1.0; 3.0; 2.0 ] in
   assert_equal 2.0 (Final_project.Bet_odds.average lst5);
 
   (* Test with a list of size 1 *)
-  let lst6 = [10.0] in
+  let lst6 = [ 10.0 ] in
   assert_equal 10.0 (Final_project.Bet_odds.average lst6);
 
   (* Test with very large numbers *)
-  let lst8 = [1000000.0; 2000000.0; 3000000.0] in
+  let lst8 = [ 1000000.0; 2000000.0; 3000000.0 ] in
   assert_equal 2000000.0 (Final_project.Bet_odds.average lst8);
 
   (* Test with a list containing zero *)
-  let lst9 = [0.0; 1.0; 2.0; 3.0] in
+  let lst9 = [ 0.0; 1.0; 2.0; 3.0 ] in
   assert_equal 1.5 (Final_project.Bet_odds.average lst9)
 
 let test_average_empty _ =
@@ -386,7 +566,7 @@ let test_match_id _ =
   assert_equal 1001 (Final_project.Match.match_id match_7);
 
   (* Test with a match having an unusually large ID (max int) *)
-  let match_8 = Final_project.Match.make_match (max_int) "TeamO" "TeamP" in
+  let match_8 = Final_project.Match.make_match max_int "TeamO" "TeamP" in
   assert_equal max_int (Final_project.Match.match_id match_8);
 
   (* Test with a match having an unusually small ID (min int) *)
@@ -395,26 +575,33 @@ let test_match_id _ =
 
 (* Test for odds_to_string function *)
 let test_odds_to_string _ =
-  let test_cases = [
-    (None, "None");
-    (Some (2.0, 3.0, 4.0), "(2.00, 3.00, 4.00)");
-    (Some (1.23, 4.56, 7.89), "(1.23, 4.56, 7.89)");
-    (Some (0.0, 0.0, 0.0), "(0.00, 0.00, 0.00)");
-    (Some (10.12345, 20.6789, 30.98765), "(10.12, 20.68, 30.99)");
-    (Some (0.001, 0.002, 0.003), "(0.00, 0.00, 0.00)");
-    (Some (1.0, 2.0, 3.0), "(1.00, 2.00, 3.00)");
-    (Some (5.12, 7.56, 9.99), "(5.12, 7.56, 9.99)");
-    (Some (0.1, 100.0, 1000.0), "(0.10, 100.00, 1000.00)");
-    (Some (0.03, 0.05, 0.07), "(0.03, 0.05, 0.07)");
-    (Some (1234.56, 7890.12, 3456.78), "(1234.56, 7890.12, 3456.78)")
-  ] in
-  List.iter (fun (input, expected) ->
-    let result = Final_project.Match.odds_to_string input in
-    assert_equal ~msg:("odds_to_string " ^ (match input with 
-      | None -> "None"
-      | Some (x, y, z) -> Printf.sprintf "(%.2f, %.2f, %.2f)" x y z
-    )) expected result
-  ) test_cases
+  let test_cases =
+    [
+      (None, "None");
+      (Some (2.0, 3.0, 4.0), "(2.00, 3.00, 4.00)");
+      (Some (1.23, 4.56, 7.89), "(1.23, 4.56, 7.89)");
+      (Some (0.0, 0.0, 0.0), "(0.00, 0.00, 0.00)");
+      (Some (10.12345, 20.6789, 30.98765), "(10.12, 20.68, 30.99)");
+      (Some (0.001, 0.002, 0.003), "(0.00, 0.00, 0.00)");
+      (Some (1.0, 2.0, 3.0), "(1.00, 2.00, 3.00)");
+      (Some (5.12, 7.56, 9.99), "(5.12, 7.56, 9.99)");
+      (Some (0.1, 100.0, 1000.0), "(0.10, 100.00, 1000.00)");
+      (Some (0.03, 0.05, 0.07), "(0.03, 0.05, 0.07)");
+      (Some (1234.56, 7890.12, 3456.78), "(1234.56, 7890.12, 3456.78)");
+    ]
+  in
+  List.iter
+    (fun (input, expected) ->
+      let result = Final_project.Match.odds_to_string input in
+      assert_equal
+        ~msg:
+          ("odds_to_string "
+          ^
+          match input with
+          | None -> "None"
+          | Some (x, y, z) -> Printf.sprintf "(%.2f, %.2f, %.2f)" x y z)
+        expected result)
+    test_cases
 
 (* Test for match_odds function *)
 let test_match_odds _ =
@@ -424,50 +611,72 @@ let test_match_odds _ =
 
   (* Test Type 2: Match with some odds set manually *)
   let match2 = Final_project.Match.make_match 2 "TeamX" "TeamY" in
-  let match2 = Final_project.Match.set_match_odds match2 (Some (0.0, 0.0, 0.0)) in
+  let match2 =
+    Final_project.Match.set_match_odds match2 (Some (0.0, 0.0, 0.0))
+  in
   assert_equal "(0.00, 0.00, 0.00)" (Final_project.Match.match_odds match2);
 
   let match3 = Final_project.Match.make_match 3 "TeamW" "TeamZ" in
-  let match3 = Final_project.Match.set_match_odds match3 (Some (1.0, 1.0, 1.0)) in
+  let match3 =
+    Final_project.Match.set_match_odds match3 (Some (1.0, 1.0, 1.0))
+  in
   assert_equal "(1.00, 1.00, 1.00)" (Final_project.Match.match_odds match3);
 
   let match4 = Final_project.Match.make_match 4 "TeamC" "TeamD" in
-  let match4 = Final_project.Match.set_match_odds match4 (Some (1.0, 2.0, 3.0)) in
+  let match4 =
+    Final_project.Match.set_match_odds match4 (Some (1.0, 2.0, 3.0))
+  in
   assert_equal "(1.00, 2.00, 3.00)" (Final_project.Match.match_odds match4);
 
   let match5 = Final_project.Match.make_match 5 "TeamC" "TeamD" in
-  let match5 = Final_project.Match.set_match_odds match5 (Some (0.1, 0.2, 0.3)) in
+  let match5 =
+    Final_project.Match.set_match_odds match5 (Some (0.1, 0.2, 0.3))
+  in
   assert_equal "(0.10, 0.20, 0.30)" (Final_project.Match.match_odds match5);
 
   let match6 = Final_project.Match.make_match 6 "TeamE" "TeamF" in
-  let match6 = Final_project.Match.set_match_odds match6 (Some (3.14, 2.71, 1.62)) in
+  let match6 =
+    Final_project.Match.set_match_odds match6 (Some (3.14, 2.71, 1.62))
+  in
   assert_equal "(3.14, 2.71, 1.62)" (Final_project.Match.match_odds match6);
 
   (* Test 7: Match with odds set to (100.0, 200.0, 300.0) *)
   let match7 = Final_project.Match.make_match 7 "TeamG" "TeamH" in
-  let match7 = Final_project.Match.set_match_odds match7 (Some (100.0, 200.0, 300.0)) in
-  assert_equal "(100.00, 200.00, 300.00)" (Final_project.Match.match_odds match7);
+  let match7 =
+    Final_project.Match.set_match_odds match7 (Some (100.0, 200.0, 300.0))
+  in
+  assert_equal "(100.00, 200.00, 300.00)"
+    (Final_project.Match.match_odds match7);
 
   let match8 = Final_project.Match.make_match 8 "TeamI" "TeamJ" in
-  let match8 = Final_project.Match.set_match_odds match8 (Some (10.0, 20.0, 30.0)) in
+  let match8 =
+    Final_project.Match.set_match_odds match8 (Some (10.0, 20.0, 30.0))
+  in
   assert_equal "(10.00, 20.00, 30.00)" (Final_project.Match.match_odds match8);
 
   let match9 = Final_project.Match.make_match 9 "TeamK" "TeamL" in
-  let match9 = Final_project.Match.set_match_odds match9 (Some (0.9, 1.8, 2.7)) in
+  let match9 =
+    Final_project.Match.set_match_odds match9 (Some (0.9, 1.8, 2.7))
+  in
   assert_equal "(0.90, 1.80, 2.70)" (Final_project.Match.match_odds match9);
 
   let match10 = Final_project.Match.make_match 10 "TeamM" "TeamN" in
-  let match10 = Final_project.Match.set_match_odds match10 (Some (5.0, 6.0, 7.0)) in
+  let match10 =
+    Final_project.Match.set_match_odds match10 (Some (5.0, 6.0, 7.0))
+  in
   assert_equal "(5.00, 6.00, 7.00)" (Final_project.Match.match_odds match10);
 
   let match11 = Final_project.Match.make_match 11 "TeamO" "TeamP" in
-  let match11 = Final_project.Match.set_match_odds match11 (Some (8.8, 7.7, 6.6)) in
+  let match11 =
+    Final_project.Match.set_match_odds match11 (Some (8.8, 7.7, 6.6))
+  in
   assert_equal "(8.80, 7.70, 6.60)" (Final_project.Match.match_odds match11);
 
   let match12 = Final_project.Match.make_match 12 "TeamQ" "TeamR" in
-  let match12 = Final_project.Match.set_match_odds match12 (Some (0.05, 0.25, 0.75)) in
+  let match12 =
+    Final_project.Match.set_match_odds match12 (Some (0.05, 0.25, 0.75))
+  in
   assert_equal "(0.05, 0.25, 0.75)" (Final_project.Match.match_odds match12)
-
 
 let test_a_side _ =
   (* Test 1: Match with "TeamA" vs "TeamB" *)
@@ -621,9 +830,11 @@ let test_of_string _ =
   assert_equal 1 (Final_project.Match.match_id match_);
   assert_equal "TeamA" (Final_project.Match.a_side match_);
   assert_equal "TeamB" (Final_project.Match.b_side match_);
-  assert_raises 
-    (Failure("Error occured with making match: 1/TeamA due to exception: Failure(\"Invalid match string format\")"))
-    (fun () -> Final_project.Match.of_string "1/TeamA")
+  assert_raises
+    (Failure
+       "Error occured with making match: 1/TeamA due to exception: \
+        Failure(\"Invalid match string format\")") (fun () ->
+      Final_project.Match.of_string "1/TeamA")
 
 let test_match_odds_skewed _ =
   let a_results = [ (10.0, 0.0); (10.0, 0.0) ] in
@@ -631,19 +842,27 @@ let test_match_odds_skewed _ =
   assert_equal "100 to 1"
     (Final_project.Bet_odds.match_odds a_results b_results);
 
-  let a_results_2 = [(0., 3.); (0., 2.); (0., 1.)] (* Team A never scores *) in
-  let b_results_2 = [(3., 0.); (2., 0.); (1., 0.)] (* Team B always scores more *) in
+  let a_results_2 =
+    [ (0., 3.); (0., 2.); (0., 1.) ]
+    (* Team A never scores *)
+  in
+  let b_results_2 =
+    [ (3., 0.); (2., 0.); (1., 0.) ]
+    (* Team B always scores more *)
+  in
   let odds_2 = Final_project.Bet_odds.match_odds a_results_2 b_results_2 in
-  assert_equal odds_2 "1 to 100" ~msg:"Expected '1 to 100' when Team A never wins"
+  assert_equal odds_2 "1 to 100"
+    ~msg:"Expected '1 to 100' when Team A never wins"
 
 let test_match_odds_equal _ =
   let a_results = [ (1.0, 1.0) ] in
   let b_results = [ (1.0, 1.0) ] in
   assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results b_results);
 
-  let a_results_2 = [(0., 0.); (0., 0.)] in
-  let b_results_2 = [(0., 0.); (0., 0.)] in
-  assert_equal "1 to 1" (Final_project.Bet_odds.match_odds a_results_2 b_results_2)
+  let a_results_2 = [ (0., 0.); (0., 0.) ] in
+  let b_results_2 = [ (0., 0.); (0., 0.) ] in
+  assert_equal "1 to 1"
+    (Final_project.Bet_odds.match_odds a_results_2 b_results_2)
 
 let test_match_odds_no_data _ =
   let a_results = [] in
@@ -672,7 +891,8 @@ let test_average_large_list _ =
 
 let test_format_date _ =
   (* Test 1: Timestamp for 2021-01-01 *)
-  let timestamp1 = 1609459200.0 in (* This corresponds to 2021-01-01 *)
+  let timestamp1 = 1609459200.0 in
+  (* This corresponds to 2021-01-01 *)
   let result1 = Final_project.Api_handling.format_date timestamp1 in
   assert_equal "2021-01-01" result1
 
@@ -797,6 +1017,78 @@ let tests =
          >:: test_change_balance_small_increments;
          "test_change_balance_small_decrements"
          >:: test_change_balance_small_decrements;
+         "test_change_balance_fractional_precision"
+         >:: test_change_balance_fractional_precision;
+         "test_change_balance_round_trip" >:: test_change_balance_round_trip;
+         "test_change_balance_zero_check_after_multiple_ops"
+         >:: test_change_balance_zero_check_after_multiple_ops;
+         "test_change_balance_multiple_fractions"
+         >:: test_change_balance_multiple_fractions;
+         "test_change_balance_substantial_overdraw"
+         >:: test_change_balance_substantial_overdraw;
+         "test_change_balance_positive_alternative1"
+         >:: test_change_balance_positive_alternative1;
+         "test_change_balance_positive_alternative2"
+         >:: test_change_balance_positive_alternative2;
+         "test_change_balance_positive_variant1"
+         >:: test_change_balance_positive_variant1;
+         "test_change_balance_positive_variant2"
+         >:: test_change_balance_positive_variant2;
+         "test_change_balance_negative_alternative1"
+         >:: test_change_balance_negative_alternative1;
+         "test_change_balance_negative_alternative2"
+         >:: test_change_balance_negative_alternative2;
+         "test_change_balance_negative_variant1"
+         >:: test_change_balance_negative_variant1;
+         "test_change_balance_negative_variant2"
+         >:: test_change_balance_negative_variant2;
+         "test_change_balance_zero_alternative1"
+         >:: test_change_balance_zero_alternative1;
+         "test_change_balance_zero_alternative2"
+         >:: test_change_balance_zero_alternative2;
+         "test_change_balance_zero_variant1"
+         >:: test_change_balance_zero_variant1;
+         "test_change_balance_zero_variant2"
+         >:: test_change_balance_zero_variant2;
+         "test_change_balance_multiple_operations_alternative1"
+         >:: test_change_balance_multiple_operations_alternative1;
+         "test_change_balance_multiple_operations_alternative2"
+         >:: test_change_balance_multiple_operations_alternative2;
+         "test_change_balance_multiple_operations_variant1"
+         >:: test_change_balance_multiple_operations_variant1;
+         "test_change_balance_multiple_operations_variant2"
+         >:: test_change_balance_multiple_operations_variant2;
+         "test_change_balance_large_positive_variant1"
+         >:: test_change_balance_large_positive_variant1;
+         "test_change_balance_large_positive_variant2"
+         >:: test_change_balance_large_positive_variant2;
+         "test_change_balance_large_negative_variant1"
+         >:: test_change_balance_large_negative_variant1;
+         "test_change_balance_large_negative_variant2"
+         >:: test_change_balance_large_negative_variant2;
+         "test_change_balance_exact_balance_deduction_variant1"
+         >:: test_change_balance_exact_balance_deduction_variant1;
+         "test_change_balance_exact_balance_deduction_variant2"
+         >:: test_change_balance_exact_balance_deduction_variant2;
+         "test_change_balance_small_increments_variant1"
+         >:: test_change_balance_small_increments_variant1;
+         "test_change_balance_small_increments_variant2"
+         >:: test_change_balance_small_increments_variant2;
+         "test_change_balance_small_decrements_variant2"
+         >:: test_change_balance_small_decrements_variant2;
+         "test_change_balance_negative_overdraw"
+         >:: test_change_balance_negative_overdraw;
+         "test_change_balance_small_fractional_increments"
+         >:: test_change_balance_small_fractional_increments;
+         "test_change_balance_small_fractional_decrements"
+         >:: test_change_balance_small_fractional_decrements;
+         "test_change_balance_large_sequence"
+         >:: test_change_balance_large_sequence;
+         "test_change_balance_multiple_small_increments_and_decrements"
+         >:: test_change_balance_multiple_small_increments_and_decrements;
+         "test_change_balance_no_change_after_zero_operations"
+         >:: test_change_balance_no_change_after_zero_operations;
+         "test_change_balance_rounding" >:: test_change_balance_rounding;
          "test_bets_to_string_multiple" >:: test_bets_to_string_multiple;
          "test_string_to_bets_empty" >:: test_string_to_bets_empty;
          "test_save_and_load_user" >:: test_save_and_load_user;
